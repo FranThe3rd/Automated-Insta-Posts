@@ -7,6 +7,7 @@ return [
 	{
 		json: {
 			exported: true,
+			exportDir: post.exportDir,
 			imagePath: post.imagePath,
 			captionPath: post.captionPath,
 			metaPath: post.metaPath,

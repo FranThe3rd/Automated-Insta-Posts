@@ -16,6 +16,8 @@ export function localWorkflowDevEnv(repoRoot = resolve(dirname(fileURLToPath(imp
 	const assets = join(repoRoot, 'workflows/assets');
 	return {
 		N8N_RESTRICT_FILE_ACCESS_TO: `${home}/.n8n-files;${home}/Downloads;${assets}`,
+		// Code node "Load logo" reads the watermark PNG from disk.
+		NODE_FUNCTION_ALLOW_BUILTIN: 'fs',
 	};
 }
 

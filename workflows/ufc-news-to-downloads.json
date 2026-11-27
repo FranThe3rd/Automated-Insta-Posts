@@ -3,22 +3,22 @@
 	"nodes": [
 		{
 			"parameters": {
-				"content": "## UFC news → Downloads (preview)\n\nBuilds the same UFC post as the Instagram workflow (Ollama caption + logo on the image) and saves files to your Mac. Nothing is posted to Instagram.\n\n### Output (per run)\nFiles save under **Settings → downloadsFolder** (default `~/.n8n-files`, allowed by n8n):\n- `YYYY-MM-DDTHH-MM-SS-story.jpg` — square post image\n- `...-caption.txt` — caption text\n- `...-meta.json` — title, link, paths\n\n### Setup\n1. Install Ollama and pull your model (`ollama pull llama3.2`) — captions use **Settings → ollamaModel**.\n2. Logo watermark: `pnpm dev:up` copies `workflows/assets/fw-logo-black-bg.png` to **~/.n8n-files/** (black background). **logoFilePath** points there.\n3. Captions end with lowercase UFC hashtags from **Settings → hashtags**.\n4. Click **Test workflow** or use the schedule.\n5. To save in **Downloads**: set **downloadsFolder** to `/Users/you/Downloads`, then start n8n with `pnpm dev:up`.\n6. Works on local n8n only (not n8n Cloud).",
-				"height": 520,
-				"width": 420
+				"content": "## UFC news → Downloads (preview)\n\nBuilds one UFC post per run and saves it to your Mac. Nothing is posted to Instagram.\n\n### Output (per run)\nEach post gets its own folder under **Settings → downloadsFolder** (default `~/.n8n-files`):\n- `<random-id>/cover.jpg` — 1080×1920 story image (9:16)\n- `<random-id>/note.txt` — caption\n- `<random-id>/data.json` — title, link, paths, and `captionSource`\n\n### Image\nBlurred backdrop, the full photo, the headline, your logo, and the outlet name. Important parts stay clear of the top and bottom of the screen.\n- Size: **imageWidth** × **imageHeight** (use 1080 × 1350 for a 4:5 feed post).\n- Look: **postLabel**, **accentColor**, **headlineFont**, **detailFont**, **logoMarkScale**. The fonts are macOS font files.\n\n### Caption\nOllama writes a hook, 2 to 3 sentences, and a question for the chosen story. Hashtags come from **hashtags** plus the fighters in the story.\n- `captionSource` in data.json is `ollama` or `backup`. `backup` means Ollama did not answer; `captionError` says why.\n- Set **includeLinkInCaption** to true to add the article link.\n\n### Setup\n1. Start Ollama (`ollama serve`) and pull the model in **ollamaModel** (`ollama pull llama3.2`).\n2. Logo: `workflows/assets/fw-logo-black-bg.png`. Backup copy in **~/.n8n-files/** after `pnpm dev:up`.\n3. Click **Test workflow** or use the schedule.\n4. To save in **Downloads**: set **downloadsFolder** to `/Users/you/Downloads`, then start n8n with `pnpm dev:up`.\n5. Works on local n8n only (not n8n Cloud).",
+				"height": 760,
+				"width": 460
 			},
-			"id": "4b063f4d-3680-4fb6-95f3-783fba9d324f",
+			"id": "16f79d71-08f5-4ae3-aa3f-66780aefd047",
 			"name": "Setup notes",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
 			"position": [
-				-520,
-				-120
+				-560,
+				-240
 			]
 		},
 		{
 			"parameters": {},
-			"id": "5d82bba5-1511-48ec-82f9-0e31d6e3ec80",
+			"id": "6ff504ba-4d5f-4365-9ee2-3483f6a8f0ec",
 			"name": "Manual Trigger",
 			"type": "n8n-nodes-base.manualTrigger",
 			"typeVersion": 1,
@@ -40,7 +40,7 @@
 					]
 				}
 			},
-			"id": "23ae5ce4-e7a4-4ac6-8d92-ef75cd9c22f4",
+			"id": "6782ccaf-c292-4f1e-9306-3142689ae559",
 			"name": "Schedule Trigger",
 			"type": "n8n-nodes-base.scheduleTrigger",
 			"typeVersion": 1.2,
@@ -54,58 +54,94 @@
 				"assignments": {
 					"assignments": [
 						{
-							"id": "830888a5-2712-48d6-9cab-0cd10f71f2f1",
+							"id": "9c4dd780-c582-4852-9d71-8e7e0d8bf0ed",
 							"name": "downloadsFolder",
 							"value": "/Users/figueroaf/.n8n-files",
 							"type": "string"
 						},
 						{
-							"id": "0610a3a4-dffe-477e-bbbc-8bb6ae68173e",
+							"id": "6c1d2bb4-4983-46e3-a103-c8b4e4fbda15",
 							"name": "hashtags",
 							"value": "#ufc #mma #ufcnews #mixedmartialarts #fightnews",
 							"type": "string"
 						},
 						{
-							"id": "b473ebc9-54d9-4a92-9a14-73139fa9f942",
+							"id": "585be7bf-f824-47a7-8e15-e7ca26d04c6b",
 							"name": "maxStoryAgeHours",
 							"value": 48,
 							"type": "number"
 						},
 						{
-							"id": "b7917b89-1416-495b-8f83-5ddb5cb12d38",
+							"id": "6209e841-c681-47d1-949f-c078a4baf6a0",
 							"name": "ollamaBaseUrl",
 							"value": "http://127.0.0.1:11434",
 							"type": "string"
 						},
 						{
-							"id": "da57c878-d634-4fc4-b3d1-492ee6315b21",
+							"id": "ecd3ea53-b2bd-49d0-a21e-3d6f938a29d5",
 							"name": "ollamaModel",
 							"value": "llama3.2",
 							"type": "string"
 						},
 						{
-							"id": "0b86b68a-bbe2-4e2f-b17d-490abeef0d50",
-							"name": "logoFilePath",
-							"value": "/Users/figueroaf/.n8n-files/fw-logo-black-bg.png",
-							"type": "string"
+							"id": "4e85b1ff-9b18-4f90-9c41-6679eeee8890",
+							"name": "includeLinkInCaption",
+							"value": false,
+							"type": "boolean"
 						},
 						{
-							"id": "b27a7977-dabf-4924-b830-4213f29eb421",
-							"name": "logoMarkScale",
-							"value": 14,
+							"id": "38277e4b-2ac6-4faa-a2f2-981962af798f",
+							"name": "imageWidth",
+							"value": 1080,
 							"type": "number"
 						},
 						{
-							"id": "f43e9bf7-3e16-41e6-a63d-4a4991fd400e",
-							"name": "logoMarkPad",
-							"value": 22,
+							"id": "d89e7768-8246-4f4a-950a-d5ee1b060c9e",
+							"name": "imageHeight",
+							"value": 1920,
+							"type": "number"
+						},
+						{
+							"id": "292851d4-0ee6-43f4-bf9a-db64ff11cc34",
+							"name": "postLabel",
+							"value": "UFC NEWS",
+							"type": "string"
+						},
+						{
+							"id": "4dc69a66-ed5c-46dc-b767-50181d2283da",
+							"name": "accentColor",
+							"value": "#D20A0A",
+							"type": "string"
+						},
+						{
+							"id": "b14057e1-b0b8-46c3-a5a9-a9fe925683cf",
+							"name": "headlineFont",
+							"value": "/System/Library/Fonts/Supplemental/Impact.ttf",
+							"type": "string"
+						},
+						{
+							"id": "45b34dcd-01fc-4509-80a2-e758d9435722",
+							"name": "detailFont",
+							"value": "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+							"type": "string"
+						},
+						{
+							"id": "363d30c2-cbf0-42d7-95f5-2b55fe38dc6d",
+							"name": "logoFilePath",
+							"value": "/Users/figueroaf/Desktop/Projects/Automated-Insta-Posts/workflows/assets/fw-logo-black-bg.png",
+							"type": "string"
+						},
+						{
+							"id": "324b1779-d8d7-4ae1-989c-7c823fb18afa",
+							"name": "logoMarkScale",
+							"value": 12,
 							"type": "number"
 						}
 					]
 				},
 				"options": {}
 			},
-			"id": "3b5c80e9-d3fe-405c-8acb-e5325bed0b56",
+			"id": "2a727c13-d17d-4e45-9961-09ac84db8c3f",
 			"name": "Settings",
 			"type": "n8n-nodes-base.set",
 			"typeVersion": 3.4,
@@ -116,9 +152,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Add or remove news sources here. Set allUfc to true for a feed that only publishes UFC news.\n// A source works only if its article images can be downloaded by other servers.\nconst feeds = [\n  { name: 'UFC.com', url: 'https://www.ufc.com/rss/news', allUfc: true },\n  { name: 'MMA Fighting', url: 'https://www.mmafighting.com/rss/index.xml' },\n  { name: 'Sherdog', url: 'https://www.sherdog.com/rss/news.xml' },\n  { name: 'MMA News', url: 'https://www.mmanews.com/feed' },\n];\n\nreturn feeds.map((feed) => ({ json: feed }));"
+				"jsCode": "// Free RSS feeds for UFC/MMA news. A source works only if article images can be fetched remotely.\nconst feeds = [\n\t{ name: 'UFC.com', url: 'https://www.ufc.com/rss/news', allUfc: true },\n\t{ name: 'ESPN MMA', url: 'https://www.espn.com/espn/rss/mma/news' },\n\t{ name: 'MMA Fighting', url: 'https://www.mmafighting.com/rss/index.xml' },\n\t{ name: 'Sherdog', url: 'https://www.sherdog.com/rss/news.xml' },\n\t{ name: 'MMA News', url: 'https://www.mmanews.com/feed' },\n\t{ name: 'BJPenn.com', url: 'https://bjpenn.com/feed/' },\n\t{ name: 'LowKick MMA', url: 'https://www.lowkickmma.com/feed/' },\n\t{ name: 'Cageside Press', url: 'https://www.cagesidepress.com/feed' },\n];\n\nreturn feeds.map((feed) => ({ json: feed }));"
 			},
-			"id": "5a798bd4-4d86-4315-bd56-7080b76ba871",
+			"id": "e6a6836b-d337-4926-b883-f9094912e4ae",
 			"name": "News sources",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -134,7 +170,7 @@
 					"customFields": "media:content, media:thumbnail"
 				}
 			},
-			"id": "44519bc1-6a20-4bfa-85ce-d5fb6af669b6",
+			"id": "5e6c9897-119a-42f3-a6f6-14f00b3d5be5",
 			"name": "Read news feeds",
 			"type": "n8n-nodes-base.rssFeedRead",
 			"typeVersion": 1.2,
@@ -146,9 +182,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Pick the newest UFC stories that this workflow has not posted or skipped yet.\nconst settings = $('Settings').first().json;\nconst feeds = $('News sources').all().map((item) => item.json);\nconst memory = $getWorkflowStaticData('global');\nconst seen = new Set([...(memory.postedKeys ?? []), ...(memory.skippedKeys ?? [])]);\n\nconst maxAgeMs = Number(settings.maxStoryAgeHours || 48) * 60 * 60 * 1000;\nconst candidateCount = 10;\n\nconst host = (url) => {\n  try {\n    return new URL(url).hostname.replace(/^www\\./, '').toLowerCase();\n  } catch {\n    return '';\n  }\n};\n\nconst linkKey = (url) => {\n  try {\n    const parsed = new URL(url);\n    return `link:${parsed.hostname.replace(/^www\\./, '')}${parsed.pathname.replace(/\\/+$/, '')}`.toLowerCase();\n  } catch {\n    return `link:${String(url).toLowerCase()}`;\n  }\n};\n\nconst titleKey = (title) =>\n  `title:${String(title).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()}`;\n\nconst firstUrl = (value) => {\n  if (!value) return '';\n  if (typeof value === 'string') return value;\n  if (Array.isArray(value)) return firstUrl(value[0]);\n  return value.url || value.$?.url || value.href || '';\n};\n\nconst looksLikeImage = (url) => /\\.(jpe?g|png|webp|gif|avif)(\\?|$)/i.test(url);\n\nconst decodeUrl = (url) => String(url).replace(/&#0?38;|&amp;/g, '&');\n\nfunction feedImage(item) {\n  const enclosure = item.enclosure;\n  if (enclosure?.url && (/^image\\//.test(enclosure.type || '') || looksLikeImage(enclosure.url))) {\n    return decodeUrl(enclosure.url);\n  }\n  const media = firstUrl(item['media:content']) || firstUrl(item['media:thumbnail']);\n  if (media) return decodeUrl(media);\n  const html = `${item['content:encoded'] || ''} ${item.content || ''}`;\n  const img = html.match(/<img[^>]+src=[\"']([^\"']+)[\"']/i);\n  return img ? decodeUrl(img[1]) : '';\n}\n\nconst feedForLink = (link) => {\n  const linkHost = host(link);\n  return feeds.find((feed) => {\n    const feedHost = host(feed.url);\n    return linkHost === feedHost || linkHost.endsWith(`.${feedHost}`) || feedHost.endsWith(`.${linkHost}`);\n  });\n};\n\nconst now = Date.now();\nconst stories = [];\nconst keysInThisRun = new Set();\n\nfor (const { json: item } of $('Read news feeds').all()) {\n  if (item.error || !item.title || !item.link) continue;\n\n  const published = new Date(item.isoDate || item.pubDate || 0).getTime();\n  if (!published || now - published > maxAgeMs || published > now + 60 * 60 * 1000) continue;\n\n  const feed = feedForLink(item.link);\n  const categories = Array.isArray(item.categories) ? item.categories.join(' ') : '';\n  const text = `${item.title} ${categories} ${item.link}`;\n  if (!feed?.allUfc && !/(^|[^a-z])ufc([^a-z]|$)/i.test(text)) continue;\n\n  const keys = [linkKey(item.link), titleKey(item.title)];\n  if (keys.some((key) => seen.has(key) || keysInThisRun.has(key))) continue;\n  keys.forEach((key) => keysInThisRun.add(key));\n\n  stories.push({\n    title: String(item.title).trim(),\n    link: item.link,\n    source: feed?.name || host(item.link),\n    publishedAt: new Date(published).toISOString(),\n    snippet: String(item.contentSnippet || '').slice(0, 1500),\n    feedImage: feedImage(item),\n    keys,\n  });\n}\n\nstories.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));\n\nreturn stories.slice(0, candidateCount).map((story) => ({ json: story }));"
+				"jsCode": "// Pick the newest UFC stories that this workflow has not posted or skipped yet.\nconst settings = $('Settings').first().json;\nconst feeds = $('News sources').all().map((item) => item.json);\nconst memory = $getWorkflowStaticData('global');\nconst seen = new Set([...(memory.postedKeys ?? []), ...(memory.skippedKeys ?? [])]);\n\nconst maxAgeMs = Number(settings.maxStoryAgeHours || 48) * 60 * 60 * 1000;\nconst candidateCount = 12;\n\n// The Code node sandbox has no URL class, so read the host and path with a pattern.\nconst urlParts = (url) => {\n\tconst match = String(url ?? '')\n\t\t.trim()\n\t\t.match(/^https?:\\/\\/([^/?#]+)([^?#]*)/i);\n\tif (!match) return null;\n\treturn {\n\t\thost: match[1]\n\t\t\t.replace(/^[^@]*@/, '')\n\t\t\t.replace(/:\\d+$/, '')\n\t\t\t.replace(/^www\\./i, '')\n\t\t\t.toLowerCase(),\n\t\tpath: match[2],\n\t};\n};\n\nconst host = (url) => urlParts(url)?.host ?? '';\n\nconst linkKey = (url) => {\n\tconst parts = urlParts(url);\n\tif (!parts) return `link:${String(url).toLowerCase()}`;\n\treturn `link:${parts.host}${parts.path.replace(/\\/+$/, '')}`.toLowerCase();\n};\n\nconst titleKey = (title) =>\n\t`title:${String(title)\n\t\t.toLowerCase()\n\t\t.replace(/[^a-z0-9]+/g, ' ')\n\t\t.trim()}`;\n\nconst firstUrl = (value) => {\n\tif (!value) return '';\n\tif (typeof value === 'string') return value;\n\tif (Array.isArray(value)) return firstUrl(value[0]);\n\treturn value.url || value.$?.url || value.href || '';\n};\n\nconst looksLikeImage = (url) => /\\.(jpe?g|png|webp|gif|avif)(\\?|$)/i.test(url);\n\nconst decodeUrl = (url) => String(url).replace(/&#0?38;|&amp;/g, '&');\n\nfunction feedImage(item) {\n\tconst enclosure = item.enclosure;\n\tif (enclosure?.url && (/^image\\//.test(enclosure.type || '') || looksLikeImage(enclosure.url))) {\n\t\treturn decodeUrl(enclosure.url);\n\t}\n\tconst media = firstUrl(item['media:content']) || firstUrl(item['media:thumbnail']);\n\tif (media) return decodeUrl(media);\n\tconst html = `${item['content:encoded'] || ''} ${item.content || ''}`;\n\tconst img = html.match(/<img[^>]+src=[\"']([^\"']+)[\"']/i);\n\treturn img ? decodeUrl(img[1]) : '';\n}\n\nconst feedForLink = (link) => {\n\tconst linkHost = host(link);\n\tif (!linkHost) return undefined;\n\treturn feeds.find((feed) => {\n\t\tconst feedHost = host(feed.url);\n\t\tif (!feedHost) return false;\n\t\treturn (\n\t\t\tlinkHost === feedHost || linkHost.endsWith(`.${feedHost}`) || feedHost.endsWith(`.${linkHost}`)\n\t\t);\n\t});\n};\n\nconst now = Date.now();\nconst stories = [];\nconst keysInThisRun = new Set();\n\nfor (const { json: item } of $('Read news feeds').all()) {\n\tif (item.error || !item.title || !item.link) continue;\n\n\tconst published = new Date(item.isoDate || item.pubDate || 0).getTime();\n\tif (!published || now - published > maxAgeMs || published > now + 60 * 60 * 1000) continue;\n\n\tconst feed = feedForLink(item.link);\n\tconst categories = Array.isArray(item.categories) ? item.categories.join(' ') : '';\n\tconst text = `${item.title} ${categories} ${item.contentSnippet || ''} ${item.link}`;\n\tconst hasUfc =\n\t\tfeed?.allUfc ||\n\t\t/(^|[^a-z])ufc([^a-z]|$)/i.test(text) ||\n\t\t/\\bultimate fighting championship\\b/i.test(text) ||\n\t\t/\\bufc\\s*\\d{2,4}\\b/i.test(text);\n\tif (!hasUfc) continue;\n\n\tconst nonUfcSport =\n\t\t/\\b(wrestling|real american freestyle|\\braf\\b|wwe|bare knuckle|nhra|nba\\b|nfl\\b|mlb\\b|ncaa wrestling)\\b/i.test(\n\t\t\ttext,\n\t\t);\n\tif (!feed?.allUfc && nonUfcSport && !/(^|[^a-z])ufc([^a-z]|$)/i.test(text)) continue;\n\n\tconst keys = [linkKey(item.link), titleKey(item.title)];\n\tif (keys.some((key) => seen.has(key) || keysInThisRun.has(key))) continue;\n\tkeys.forEach((key) => keysInThisRun.add(key));\n\n\tstories.push({\n\t\ttitle: String(item.title).trim(),\n\t\tlink: item.link,\n\t\tsource: feed?.name || host(item.link),\n\t\tpublishedAt: new Date(published).toISOString(),\n\t\tsnippet: String(item.contentSnippet || item.content || '').slice(0, 2000),\n\t\tfeedImage: feedImage(item),\n\t\tkeys,\n\t});\n}\n\nstories.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));\n\nreturn stories.slice(0, candidateCount).map((story) => ({ json: story }));"
 			},
-			"id": "d34dcd4d-3dd1-40fb-828a-882e9b1e35ce",
+			"id": "219dcff9-9b13-413f-ac2f-1932b17dcba6",
 			"name": "Pick new UFC stories",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -179,7 +215,7 @@
 					"timeout": 15000
 				}
 			},
-			"id": "62e55fb8-1b30-4de3-a5de-20eee04ee197",
+			"id": "af8b665a-e346-46e1-ba13-2cb83313caff",
 			"name": "Fetch article pages",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
@@ -191,9 +227,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Build Instagram posts with Ollama captions and a bottom-right logo watermark.\nconst settings = $('Settings').first().json;\nconst stories = $('Pick new UFC stories').all();\nconst pages = $input.all();\n\nconst decode = (text) =>\n\tString(text)\n\t\t.replace(/&amp;|&#0?38;/g, '&')\n\t\t.replace(/&quot;/g, '\"')\n\t\t.replace(/&#0?39;|&apos;/g, \"'\")\n\t\t.replace(/&#8217;/g, '’')\n\t\t.replace(/&#8216;/g, '‘')\n\t\t.replace(/&#8220;/g, '“')\n\t\t.replace(/&#8221;/g, '”')\n\t\t.replace(/&#8230;/g, '…')\n\t\t.replace(/&nbsp;/g, ' ')\n\t\t.replace(/&lt;/g, '<')\n\t\t.replace(/&gt;/g, '>');\n\nfunction metaContent(html, names) {\n\tif (typeof html !== 'string') return '';\n\tfor (const tag of html.match(/<meta\\b[^>]*>/gi) || []) {\n\t\tconst name = tag.match(/(?:property|name)\\s*=\\s*[\"']([^\"']+)[\"']/i)?.[1]?.toLowerCase();\n\t\tif (!names.includes(name)) continue;\n\t\tconst content = tag.match(/content\\s*=\\s*\"([^\"]*)\"|content\\s*=\\s*'([^']*)'/i);\n\t\tconst value = content?.[1] ?? content?.[2];\n\t\tif (value) return decode(value).trim();\n\t}\n\treturn '';\n}\n\nfunction pageImage(html) {\n\tconst url = metaContent(html, ['og:image', 'og:image:secure_url', 'twitter:image', 'twitter:image:src']);\n\treturn /^https?:\\/\\//i.test(url) ? url : '';\n}\n\nconst pageSummary = (html) => metaContent(html, ['og:description', 'description', 'twitter:description']);\n\nfunction cleanSnippet(text) {\n\treturn decode(text)\n\t\t.replace(/The post .* appeared first on .*$/is, '')\n\t\t.replace(/Read the Full Article Here/gi, '')\n\t\t.replace(/\\s*\\[(?:…|\\.\\.\\.)\\]\\s*$/, '…')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim();\n}\n\nfunction shorten(text, max) {\n\tif (text.length <= max) return text;\n\tconst cut = text.slice(0, max);\n\treturn `${cut.slice(0, Math.max(cut.lastIndexOf(' '), max - 20)).trim()}…`;\n}\n\nfunction fallbackCaption(story, html) {\n\tconst title = decode(story.title);\n\tconst snippet = shorten(cleanSnippet(pageSummary(html) || story.snippet), 500);\n\treturn snippet && snippet !== title ? `${title}\\n\\n${snippet}` : title;\n}\n\nfunction instagramImage(source) {\n\tlet url = `https://images.weserv.nl/?url=${encodeURIComponent(source)}&w=1080&h=1080&fit=contain&cbg=000000&output=jpg&q=90`;\n\tconst localLogo = String(settings.logoFilePath || '').trim();\n\tif (localLogo) return url;\n\tconst logo = String(settings.logoPublicUrl || '').trim();\n\tif (!logo || logo.includes('PASTE_PUBLIC')) return url;\n\tconst scale = Number(settings.logoMarkScale || 14);\n\tconst pad = Number(settings.logoMarkPad || 22);\n\treturn `${url}&mark=${encodeURIComponent(logo)}&markpos=bottom-right&markpad=${pad}&markscale=${scale}`;\n}\n\nasync function ollamaCaption(story, html) {\n\tconst base = String(settings.ollamaBaseUrl || 'http://127.0.0.1:11434').replace(/\\/$/, '');\n\tconst model = String(settings.ollamaModel || 'llama3.2');\n\tconst summary = shorten(cleanSnippet(pageSummary(html) || story.snippet), 700);\n\tconst prompt = `Write an Instagram caption for a UFC news post.\n\nHeadline: ${decode(story.title)}\nSummary: ${summary}\nSource: ${story.source}\n\nRules:\n- Two short paragraphs, under 120 words total.\n- Energetic fight-fan voice.\n- Use only facts from the headline and summary.\n- No hashtags, no emojis, no bullet lists.\n- Do not mention Instagram.`;\n\n\ttry {\n\t\tconst res = await fetch(`${base}/api/generate`, {\n\t\t\tmethod: 'POST',\n\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\tbody: JSON.stringify({\n\t\t\t\tmodel,\n\t\t\t\tprompt,\n\t\t\t\tstream: false,\n\t\t\t\toptions: { temperature: 0.65, num_predict: 240 },\n\t\t\t}),\n\t\t\tsignal: AbortSignal.timeout(90000),\n\t\t});\n\t\tif (!res.ok) throw new Error(`ollama ${res.status}`);\n\t\tconst data = await res.json();\n\t\tconst text = String(data.response || '').trim();\n\t\treturn text || fallbackCaption(story, html);\n\t} catch {\n\t\treturn fallbackCaption(story, html);\n\t}\n}\n\nreturn (async () => {\n\tconst posts = [];\n\tfor (let i = 0; i < stories.length; i++) {\n\t\tconst story = stories[i].json;\n\t\tconst html = pages[i]?.json?.data;\n\t\tconst sourceImage = pageImage(html) || story.feedImage;\n\t\tif (!sourceImage) continue;\n\n\t\tconst body = await ollamaCaption(story, html);\n\t\tconst tags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t\t\t.toLowerCase()\n\t\t\t.trim();\n\t\tconst footer = [`Source: ${story.source}`, `Full story: ${story.link}`, '', tags].join('\\n').trim();\n\t\tconst caption = shorten(body, 2200 - footer.length - 4) + `\\n\\n${footer}`;\n\n\t\tposts.push({\n\t\t\tjson: {\n\t\t\t\t...story,\n\t\t\t\tsourceImage,\n\t\t\t\timageUrl: instagramImage(sourceImage),\n\t\t\t\tcaption,\n\t\t\t},\n\t\t});\n\t}\n\treturn posts;\n})();"
+				"jsCode": "// Turn each picked story into a post draft: clean article facts, image links, and a backup caption.\n// The AI caption is written later, for the one story that gets exported.\nconst settings = $('Settings').first().json;\nconst stories = $('Pick new UFC stories').all();\nconst pages = $input.all();\n\nconst NAMED_ENTITIES = {\n\tamp: '&',\n\tquot: '\"',\n\tapos: \"'\",\n\tnbsp: ' ',\n\tlt: '<',\n\tgt: '>',\n\tlsquo: '‘',\n\trsquo: '’',\n\tldquo: '“',\n\trdquo: '”',\n\thellip: '…',\n\tndash: '–',\n\tmdash: '—',\n};\n\nconst codePoint = (value) =>\n\tvalue > 0 && value <= 0x10ffff ? String.fromCodePoint(value) : '';\n\nconst decode = (text) =>\n\tString(text ?? '')\n\t\t.replace(/&#x([0-9a-f]+);/gi, (_, hex) => codePoint(parseInt(hex, 16)))\n\t\t.replace(/&#(\\d+);/g, (_, dec) => codePoint(Number(dec)))\n\t\t.replace(/&([a-z]+);/gi, (entity, name) => NAMED_ENTITIES[name.toLowerCase()] ?? entity);\n\nfunction metaContent(html, names) {\n\tif (typeof html !== 'string') return '';\n\tfor (const tag of html.match(/<meta\\b[^>]*>/gi) || []) {\n\t\tconst name = tag.match(/(?:property|name)\\s*=\\s*[\"']([^\"']+)[\"']/i)?.[1]?.toLowerCase();\n\t\tif (!names.includes(name)) continue;\n\t\tconst content = tag.match(/content\\s*=\\s*\"([^\"]*)\"|content\\s*=\\s*'([^']*)'/i);\n\t\tconst value = content?.[1] ?? content?.[2];\n\t\tif (value) return decode(value).trim();\n\t}\n\treturn '';\n}\n\nfunction pageImage(html) {\n\tconst url = metaContent(html, ['og:image', 'og:image:secure_url', 'twitter:image', 'twitter:image:src']);\n\treturn /^https?:\\/\\//i.test(url) ? url : '';\n}\n\nconst pageSummary = (html) => metaContent(html, ['og:description', 'description', 'twitter:description']);\n\nconst stripTags = (html) =>\n\tString(html ?? '')\n\t\t.replace(/<(script|style|noscript|figure|figcaption|iframe|svg|form|button)\\b[\\s\\S]*?<\\/\\1>/gi, ' ')\n\t\t.replace(/<[^>]+>/g, ' ');\n\nfunction cleanText(text) {\n\treturn decode(stripTags(text))\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/The post .* appeared first on .*$/is, '')\n\t\t.replace(/Read the Full Article Here/gi, ' ')\n\t\t.replace(/\\bAdvertisement\\b/g, ' ')\n\t\t.replace(/\\s*\\[(?:…|\\.\\.\\.)\\]\\s*$/, '…')\n\t\t.replace(/\\s+([,.;:!?])/g, '$1')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim();\n}\n\nconst PAGE_CHROME =\n\t/(cookie|privacy policy|terms of (use|service)|newsletter|subscribe|sign up|sign in|log in|follow (us|me|him|her)\\b|all rights reserved|©|click here|download the app|getty images|photo (by|credit)|image credit|read more|related:|share this|leave a comment|join the conversation|affiliate|sportsbook|promo code|odds (via|by))/i;\n\nconst SOCIAL_EMBED =\n\t/<blockquote\\b[^>]*class\\s*=\\s*[\"'][^\"']*(twitter|instagram|tiktok|bluesky)[^\"']*[\"'][\\s\\S]*?<\\/blockquote>/gi;\n\n// Split the article into text blocks. Some sites use <p>, others use <br> between paragraphs.\nfunction articleBlocks(html) {\n\tif (typeof html !== 'string') return [];\n\tconst scope =\n\t\thtml.match(/<article\\b[\\s\\S]*?<\\/article>/i)?.[0] || html.match(/<main\\b[\\s\\S]*?<\\/main>/i)?.[0] || html;\n\treturn scope\n\t\t.replace(/\\s+/g, ' ')\n\t\t.replace(/<(script|style|noscript|figure|figcaption|iframe|svg|form|button|nav|aside|footer)\\b[\\s\\S]*?<\\/\\1>/gi, '\\n')\n\t\t.replace(SOCIAL_EMBED, '\\n')\n\t\t.replace(/<br\\s*\\/?>|<\\/(p|div|li|h[1-6]|blockquote|section|tr)>/gi, '\\n')\n\t\t.split('\\n')\n\t\t.map(cleanText)\n\t\t.filter((block) => block.length >= 60 && !PAGE_CHROME.test(block));\n}\n\nconst ABBREVIATION = /\\b(vs|jr|sr|mr|mrs|ms|dr|st|no|u\\.s|u\\.k|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\\.$/i;\n\nfunction sentences(text) {\n\tconst pieces = String(text)\n\t\t.split(/(?<=[.!?…][\"'”’)]?)\\s+(?=[\"'“‘(]?[A-Z0-9])/)\n\t\t.map((piece) => piece.trim())\n\t\t.filter(Boolean);\n\tconst out = [];\n\tfor (const piece of pieces) {\n\t\tconst last = out[out.length - 1];\n\t\tif (last && ABBREVIATION.test(last)) out[out.length - 1] = `${last} ${piece}`;\n\t\telse out.push(piece);\n\t}\n\treturn out;\n}\n\nconst fingerprint = (text) =>\n\tString(text)\n\t\t.toLowerCase()\n\t\t.replace(/[^a-z0-9]+/g, ' ')\n\t\t.trim();\n\n// A whole sentence ends with a full stop, a question mark, or an exclamation mark.\n// Subheadings and summaries that a site cut short do not.\nconst isWhole = (sentence) => /[.!?][\"'”’)\\]]*$/.test(sentence) && !/(…|\\.\\.\\.)[\"'”’)\\]]*$/.test(sentence);\n\n// Collect unique, whole sentences about the story, best source first.\nfunction storyFacts(story, html) {\n\tconst title = decode(story.title).trim();\n\tconst titlePrint = fingerprint(title);\n\tconst seen = new Set([titlePrint]);\n\tconst facts = [];\n\n\tconst add = (text, { anySentence = false } = {}) => {\n\t\tconst withoutTitle = title ? String(text).split(title).join(' ') : String(text);\n\t\tfor (const sentence of sentences(cleanText(withoutTitle))) {\n\t\t\tconst print = fingerprint(sentence);\n\t\t\tif (print.length < 25 || seen.has(print) || titlePrint.includes(print)) continue;\n\t\t\tif (!anySentence && !isWhole(sentence)) continue;\n\t\t\tif (PAGE_CHROME.test(sentence)) continue;\n\t\t\tseen.add(print);\n\t\t\tfacts.push(sentence);\n\t\t}\n\t};\n\n\tadd(pageSummary(html));\n\tfor (const block of articleBlocks(html)) add(block);\n\tif (facts.join(' ').length < 240) add(story.snippet);\n\tif (facts.length === 0) add(pageSummary(html) || story.snippet, { anySentence: true });\n\treturn facts;\n}\n\n// Join whole sentences until the limit; never stop in the middle of a word.\nfunction joinUpTo(parts, max) {\n\tlet text = '';\n\tfor (const part of parts) {\n\t\tconst next = text ? `${text} ${part}` : part;\n\t\tif (next.length > max) break;\n\t\ttext = next;\n\t}\n\tif (text || parts.length === 0) return text;\n\tconst cut = parts[0].slice(0, max);\n\treturn `${cut.slice(0, Math.max(cut.lastIndexOf(' '), max - 30)).trim()}…`;\n}\n\nfunction backupCaption(title, facts) {\n\tconst detail = joinUpTo(facts, 420);\n\treturn detail ? `${title}\\n\\n${detail}` : title;\n}\n\nconst proxied = (source, params) =>\n\t`https://images.weserv.nl/?url=${encodeURIComponent(source)}&${params}`;\n\nfunction instagramImage(source) {\n\tconst url = proxied(source, 'w=1080&h=1080&fit=contain&cbg=000000&output=jpg&q=90');\n\tconst localLogo = String(settings.logoFilePath || '').trim();\n\tif (localLogo) return url;\n\tconst logo = String(settings.logoPublicUrl || '').trim();\n\tif (!logo || logo.includes('PASTE_PUBLIC')) return url;\n\tconst scale = Number(settings.logoMarkScale || 14);\n\tconst pad = Number(settings.logoMarkPad || 22);\n\treturn `${url}&mark=${encodeURIComponent(logo)}&markpos=bottom-right&markpad=${pad}&markscale=${scale}`;\n}\n\nconst width = Math.round(Number(settings.imageWidth) || 1080);\nconst height = Math.round(Number(settings.imageHeight) || 1920);\nconst tags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t.toLowerCase()\n\t.trim();\n\nconst posts = [];\nfor (let i = 0; i < stories.length; i++) {\n\tconst story = stories[i].json;\n\tconst html = pages[i]?.json?.data;\n\tconst sourceImage = pageImage(html) || story.feedImage;\n\tif (!sourceImage) continue;\n\n\tconst title = decode(story.title).replace(/\\s+/g, ' ').trim();\n\tconst facts = storyFacts(story, html);\n\tconst captionBody = backupCaption(title, facts);\n\n\tposts.push({\n\t\tjson: {\n\t\t\t...story,\n\t\t\ttitle,\n\t\t\tsourceImage,\n\t\t\timageUrl: instagramImage(sourceImage),\n\t\t\t// Sharp photo at full width, and a blurred copy that fills the whole frame behind it.\n\t\t\tphotoUrl: proxied(sourceImage, `w=${width}&output=png`),\n\t\t\tbackdropUrl: proxied(sourceImage, `w=${width}&h=${height}&fit=cover&blur=35&output=jpg&q=75`),\n\t\t\tstoryFacts: joinUpTo(facts, 1800),\n\t\t\tcaptionBody,\n\t\t\tcaption: `${captionBody}\\n\\nSource: ${story.source}\\n\\n${tags}`,\n\t\t\tcaptionSource: 'backup',\n\t\t},\n\t});\n}\n\nreturn posts;\n"
 			},
-			"id": "9af08bda-1c0b-4492-897f-0bf6599c2db9",
+			"id": "9c1bf9b2-97e5-488a-b80c-51344c66d2bc",
 			"name": "Build Instagram posts",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -217,7 +253,7 @@
 					"timeout": 30000
 				}
 			},
-			"id": "69d36c4a-8527-43d1-80ac-fd6f393e5c6d",
+			"id": "26aa4e1b-8dd4-4020-b93a-ea2fb6f48240",
 			"name": "Check images",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
@@ -231,7 +267,7 @@
 			"parameters": {
 				"jsCode": "// Pick the newest story whose image is a valid JPEG.\nconst posts = $('Build Instagram posts').all();\nconst checks = $('Check images').all();\n\nconst working = posts.filter((post, i) => {\n\tconst check = checks[i]?.json ?? {};\n\tconst type = String(check.headers?.['content-type'] ?? '');\n\treturn check.statusCode === 200 && type.startsWith('image/jpeg');\n});\n\nconst post = working[0];\nreturn post ? [{ json: post.json }] : [];"
 			},
-			"id": "5c19ac44-b26a-41e7-a84f-a8c425fc55e6",
+			"id": "f3cd1082-b5ab-448d-a720-70d634a8f583",
 			"name": "Choose story to export",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -242,9 +278,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Build local file paths under the Downloads folder.\nconst post = $json;\nconst settings = $('Settings').first().json;\nlet folder = String(settings.downloadsFolder || '').trim();\nif (!folder) folder = '/Users/figueroaf/.n8n-files';\nif (folder.startsWith('~/')) {\n  throw new Error(\n    'Set a full path in Settings → downloadsFolder (example: /Users/you/Downloads). Tilde (~) is not supported.',\n  );\n}\nfolder = folder.replace(/\\/$/, '');\n\nconst slug = String(post.title || 'ufc-story')\n\t.toLowerCase()\n\t.normalize('NFKD')\n\t.replace(/[\\u0300-\\u036f]/g, '')\n\t.replace(/[^a-z0-9]+/g, '-')\n\t.replace(/^-+|-+$/g, '')\n\t.slice(0, 48) || 'ufc-story';\n\nconst stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);\nconst base = `${folder}/ufc-${stamp}-${slug}`;\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\t...post,\n\t\t\tdownloadsFolder: folder,\n\t\t\tfileBase: base,\n\t\t\timagePath: `${base}.jpg`,\n\t\t\tcaptionPath: `${base}-caption.txt`,\n\t\t\tmetaPath: `${base}-meta.json`,\n\t\t},\n\t},\n];"
+				"jsCode": "// One opaque folder per post with neutral filenames (needs fs — start n8n with pnpm dev:up).\nconst fs = require('fs');\n\nconst post = $json;\nconst settings = $('Settings').first().json;\nlet folder = String(settings.downloadsFolder || '').trim();\nif (!folder) folder = '/Users/figueroaf/.n8n-files';\nif (folder.startsWith('~/')) {\n\tthrow new Error(\n\t\t'Set a full path in Settings → downloadsFolder (example: /Users/you/Downloads). Tilde (~) is not supported.',\n\t);\n}\nfolder = folder.replace(/\\/$/, '');\n\nconst id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;\nconst postDir = `${folder}/${id}`;\nfs.mkdirSync(postDir, { recursive: true });\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\t...post,\n\t\t\tdownloadsFolder: folder,\n\t\t\texportDir: postDir,\n\t\t\texportId: id,\n\t\t\tfileBase: postDir,\n\t\t\timagePath: `${postDir}/cover.jpg`,\n\t\t\tcaptionPath: `${postDir}/note.txt`,\n\t\t\tmetaPath: `${postDir}/data.json`,\n\t\t},\n\t},\n];"
 			},
-			"id": "2c8ae5f3-dafd-471f-ad35-6a148b3b5c81",
+			"id": "4dc00dc5-78a5-4513-9051-ee78b89d1514",
 			"name": "Prepare export paths",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -255,7 +291,59 @@
 		},
 		{
 			"parameters": {
-				"url": "={{ $json.imageUrl }}",
+				"jsCode": "// Build the Ollama request for the chosen story only, so each run makes one AI call.\nconst settings = $('Settings').first().json;\nconst post = $json;\n\nconst system = `You write Instagram captions for a UFC news page. Fight fans read them on their phones.\n\nWrite like a fan who knows the sport: direct, clear, and natural. Use only the facts in the article text. Never add records, dates, quotes, results, or opinions that are not in the article text. If the article text is thin, write less.\n\nAnswer with JSON that has these fields:\n- \"hook\": one sentence of 8 to 16 words that says what happened. Use your own words. It is not a question and it is not clickbait.\n- \"body\": 2 or 3 sentences, 40 to 70 words in total. Give the key details and what comes next. Do not repeat the hook.\n- \"question\": one short question that asks fans what they think about this story.\n- \"fighters\": the full names of the fighters in the headline, 3 at most.\n\nRules for the text: no hashtags, no emojis, no links, no outlet or author names, no dates of publication. Do not start with \"In a\", \"Breaking\", or \"It's official\". Use contractions.`;\n\nconst user = `Headline: ${post.title}\n\nArticle text:\n${post.storyFacts || post.title}`;\n\nconst ollamaRequest = {\n\tmodel: String(settings.ollamaModel || 'llama3.2'),\n\tstream: false,\n\tmessages: [\n\t\t{ role: 'system', content: system },\n\t\t{ role: 'user', content: user },\n\t],\n\t// A JSON schema keeps a small local model from adding a preamble or markdown.\n\tformat: {\n\t\ttype: 'object',\n\t\tproperties: {\n\t\t\thook: { type: 'string' },\n\t\t\tbody: { type: 'string' },\n\t\t\tquestion: { type: 'string' },\n\t\t\tfighters: { type: 'array', items: { type: 'string' } },\n\t\t},\n\t\trequired: ['hook', 'body', 'question', 'fighters'],\n\t},\n\t// A low temperature keeps the text close to the article.\n\toptions: { temperature: 0.3, top_p: 0.9, num_predict: 400, num_ctx: 4096 },\n};\n\nreturn [{ json: { ...post, ollamaRequest } }];\n"
+			},
+			"id": "13510f25-c721-4e0e-8528-ec73fa1cf7fe",
+			"name": "Build caption prompt",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				2200,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"method": "POST",
+				"url": "={{ $('Settings').first().json.ollamaBaseUrl.replace(/\\/+$/, '') }}/api/chat",
+				"sendBody": true,
+				"specifyBody": "json",
+				"jsonBody": "={{ JSON.stringify($json.ollamaRequest) }}",
+				"options": {
+					"response": {
+						"response": {
+							"neverError": true
+						}
+					},
+					"timeout": 180000
+				}
+			},
+			"id": "a072b182-2ab4-4624-b904-1efb532b1206",
+			"name": "Ask Ollama for caption",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
+			"position": [
+				2420,
+				60
+			],
+			"onError": "continueRegularOutput"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Clean the Ollama answer and assemble the caption. Use the backup caption when Ollama gave nothing usable.\nconst settings = $('Settings').first().json;\nconst { ollamaRequest, ...post } = $('Build caption prompt').first().json;\nconst reply = $input.first().json ?? {};\n\nconst tidy = (value) =>\n\tString(value ?? '')\n\t\t.replace(/https?:\\/\\/\\S+/g, ' ')\n\t\t.replace(/#[\\p{L}\\p{N}_]+/gu, ' ')\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/[*_`]+/g, '')\n\t\t.replace(/\\s+([,.;:!?])/g, '$1')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim()\n\t\t.replace(/^[\"“”']+|[\"“”']+$/g, '')\n\t\t.trim();\n\nconst plain = (text) =>\n\tString(text)\n\t\t.normalize('NFD')\n\t\t.replace(/[\\u0300-\\u036f]/g, '')\n\t\t.toLowerCase();\n\n// A small local model sometimes adds claims that the article does not make. Keep a sentence only\n// when most of its words, and all of its numbers and names, come from the article.\nconst article = plain(`${post.title} ${post.storyFacts ?? ''}`);\nconst COMMON_WORDS = new Set(\n\t`about after again also always been before being both could does doing down each even ever every\n\tfans from have having here into just know like make many more most much must need next only other\n\tover really said same says should some still such sure take than that their them then there these\n\tthey thing think this those very want what when where which while will with would your`.split(/\\s+/),\n);\nconst stems = (text) =>\n\t(plain(text).match(/[a-z0-9]+/g) ?? [])\n\t\t.filter((word) => word.length > 3 && !COMMON_WORDS.has(word))\n\t\t.map((word) => word.slice(0, 5));\nconst articleStems = new Set(stems(article));\n\nfunction fromArticle(sentence, minShare) {\n\tconst numbers = sentence.match(/\\d[\\d,.:-]*\\d|\\d/g) ?? [];\n\tif (numbers.some((number) => !article.includes(number))) return false;\n\t// A capital letter after the first word marks a name.\n\tconst names = sentence.split(/\\s+/).slice(1).filter((word) => /^[A-Z][a-z]{2,}/.test(word));\n\tif (names.some((name) => !article.includes(plain(name.replace(/[^\\p{L}].*$/u, ''))))) return false;\n\tconst words = stems(sentence);\n\tif (words.length === 0) return true;\n\treturn words.filter((word) => articleStems.has(word)).length / words.length >= minShare;\n}\n\nconst splitSentences = (text) => text.split(/(?<=[.!?][\"”’)]?)\\s+/).filter(Boolean);\n\nfunction readAnswer() {\n\tif (reply.error) {\n\t\tconst detail = typeof reply.error === 'string' ? reply.error : reply.error.message;\n\t\tthrow new Error(detail || 'Ollama request failed');\n\t}\n\tconst content = reply.message?.content ?? reply.response;\n\tif (!content) throw new Error('Ollama returned no text');\n\tconst answer = typeof content === 'string' ? JSON.parse(content) : content;\n\n\tconst hook = tidy(answer.hook);\n\tconst question = tidy(answer.question);\n\tconst body = splitSentences(tidy(answer.body))\n\t\t.map((sentence) => sentence.trim())\n\t\t.filter((sentence) => !sentence.endsWith('?') && fromArticle(sentence, 0.6))\n\t\t.join(' ');\n\tif (body.length < 80 || body.length > 900) {\n\t\tthrow new Error('Ollama text did not match the article closely enough');\n\t}\n\n\tconst hookFits = hook.length >= 15 && hook.length <= 200 && fromArticle(hook, 0.6);\n\tconst questionFits =\n\t\tquestion.endsWith('?') && question.length >= 15 && question.length <= 180 && fromArticle(question, 0.4);\n\n\treturn {\n\t\thook: hookFits ? hook.replace(/([^.!?])$/, '$1.') : post.title,\n\t\tbody,\n\t\tquestion: questionFits ? question : '',\n\t\tfighters: Array.isArray(answer.fighters) ? answer.fighters : [],\n\t};\n}\n\n// Keep a name tag only when the article really names that person. Names in the headline come\n// first. When the headline has no name, one name from the article is enough.\nfunction nameTags(fighters) {\n\tconst headline = plain(post.title);\n\tconst inHeadline = [];\n\tconst inArticle = [];\n\tfor (const fighter of fighters) {\n\t\tconst name = tidy(fighter);\n\t\tconst words = name.split(' ');\n\t\tif (words.length < 2 || words.length > 4 || !article.includes(plain(name))) continue;\n\t\tconst tag = `#${plain(name).replace(/[^a-z0-9]/g, '')}`;\n\t\tconst list = headline.includes(plain(name)) ? inHeadline : inArticle;\n\t\tif (tag.length > 3 && !list.includes(tag)) list.push(tag);\n\t}\n\treturn inHeadline.length > 0 ? inHeadline.slice(0, 3) : inArticle.slice(0, 1);\n}\n\nfunction eventTags() {\n\tconst tags = [];\n\tconst numbered = post.title.match(/\\bUFC\\s?(\\d{3})\\b/i);\n\tif (numbered) tags.push(`#ufc${numbered[1]}`);\n\tif (/\\bUFC Fight Night\\b/i.test(post.title)) tags.push('#ufcfightnight');\n\treturn tags;\n}\n\n// Closes the caption when the model gave no usable question.\nconst OPEN_QUESTION = 'What’s your take? Tell us in the comments.';\n\nlet parts;\nlet captionSource = 'ollama';\nlet captionError;\nlet extraTags = eventTags();\n\ntry {\n\tconst answer = readAnswer();\n\tparts = [answer.hook, answer.body, answer.question || OPEN_QUESTION];\n\textraTags = [...nameTags(answer.fighters), ...extraTags];\n} catch (error) {\n\t// The export continues with the backup text. data.json records why.\n\tparts = [post.captionBody || post.title, OPEN_QUESTION];\n\tcaptionSource = 'backup';\n\tcaptionError = error.message;\n}\n\nconst baseTags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t.toLowerCase()\n\t.split(/\\s+/)\n\t.filter(Boolean);\nconst hashtags = [...new Set([...baseTags, ...extraTags])].slice(0, 30).join(' ');\n\nconst credit = [`Source: ${post.source}`];\nif (settings.includeLinkInCaption) credit.push(`Full story: ${post.link}`);\n\nconst caption = [...parts, credit.join('\\n'), hashtags].join('\\n\\n');\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\t...post,\n\t\t\tcaption,\n\t\t\tcaptionSource,\n\t\t\t...(captionError ? { captionError } : {}),\n\t\t},\n\t},\n];\n"
+			},
+			"id": "ffc6a361-3812-4320-8a6b-23800190ce3a",
+			"name": "Finish caption",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				2640,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"url": "={{ $json.backdropUrl }}",
 				"options": {
 					"response": {
 						"response": {
@@ -266,55 +354,109 @@
 					"timeout": 60000
 				}
 			},
-			"id": "1c71cb4e-2a16-4cd4-814a-b0bd957a2205",
-			"name": "Download post image",
+			"id": "72e9cd5f-e0e6-497c-8654-0cdd92ddc883",
+			"name": "Download backdrop",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
 			"position": [
-				2200,
+				2860,
 				60
 			]
 		},
 		{
 			"parameters": {
-				"jsCode": "// Keep export paths on the item and fail fast when the JPEG did not download.\nconst prep = $('Prepare export paths').first().json;\nconst item = $input.first();\n\nif (!item.binary?.data) {\n\tthrow new Error(\n\t\t`Image download failed for \"${prep.title}\". Check imageUrl in the previous node output.`,\n\t);\n}\n\nreturn [{ json: { ...prep }, binary: item.binary }];"
-			},
-			"id": "a8d85a5d-526b-4032-82da-a391765c6323",
-			"name": "Ensure image downloaded",
-			"type": "n8n-nodes-base.code",
-			"typeVersion": 2,
-			"position": [
-				2310,
-				60
-			]
-		},
-		{
-			"parameters": {
-				"operation": "read",
-				"fileSelector": "={{ $('Settings').first().json.logoFilePath }}",
+				"url": "={{ $('Finish caption').first().json.photoUrl }}",
 				"options": {
-					"dataPropertyName": "logo"
+					"response": {
+						"response": {
+							"responseFormat": "file",
+							"outputPropertyName": "photo"
+						}
+					},
+					"timeout": 60000
 				}
 			},
-			"id": "43c2277a-b061-42c3-82be-1211f62ae277",
-			"name": "Read logo asset",
-			"type": "n8n-nodes-base.readWriteFile",
-			"typeVersion": 1.1,
+			"id": "5356a666-5e45-4dc2-b9aa-46d4c1d2a70f",
+			"name": "Download photo",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
 			"position": [
-				2420,
-				-60
+				3080,
+				60
 			]
 		},
 		{
 			"parameters": {
-				"jsCode": "// Merge the post JPEG with the logo file read from workflows/assets.\nconst post = $('Ensure image downloaded').first();\nconst logo = $input.first().binary?.logo;\nif (!logo) {\n\tthrow new Error(\n\t\t'Logo file missing. Run pnpm dev:up (copies the logo to ~/.n8n-files) or set Settings → logoFilePath.',\n\t);\n}\nreturn [\n\t{\n\t\tjson: post.json,\n\t\tbinary: {\n\t\t\tdata: post.binary.data,\n\t\t\tlogo,\n\t\t},\n\t},\n];"
+				"operation": "information",
+				"dataPropertyName": "photo"
 			},
-			"id": "3ef8ffa0-7a18-4485-8441-d9ba9cc67277",
-			"name": "Attach logo binary",
+			"id": "279c9a54-74b6-4133-a36d-cb6c3f02c23b",
+			"name": "Read photo size",
+			"type": "n8n-nodes-base.editImage",
+			"typeVersion": 2,
+			"position": [
+				3300,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Plan where each part of the story image goes. The Edit Image nodes after this node read `layout`.\nconst settings = $('Settings').first().json;\nconst post = $('Finish caption').first().json;\nconst item = $input.first();\n\nif (!item.binary?.data || !item.binary?.photo) {\n\tthrow new Error(`Image download failed for \"${post.title}\". Check photoUrl and backdropUrl in data.`);\n}\n\nconst W = Math.round(Number(settings.imageWidth) || 1080);\nconst H = Math.round(Number(settings.imageHeight) || 1920);\nconst u = W / 1080;\nconst px = (value) => Math.round(value * u);\n\n// Impact advance widths in thousandths of the font size. Another headline font uses them as an estimate.\nconst GLYPH_WIDTHS = {\n\t168: ',‘’',\n\t176: ' ',\n\t185: \"'.\",\n\t202: ':;',\n\t270: '!',\n\t288: 'IÍ',\n\t294: '-',\n\t313: '()',\n\t331: 'J',\n\t345: '“”',\n\t370: '\"',\n\t380: 'L',\n\t381: '1',\n\t392: '7',\n\t396: '/',\n\t397: 'ZŽ',\n\t398: 'F',\n\t416: 'EÈÉÊË',\n\t461: 'T',\n\t473: 'Y',\n\t482: 'X',\n\t500: '4–',\n\t502: '2P',\n\t508: 'AÀÁÂÃÄÅ',\n\t517: 'SŠ',\n\t523: 'V',\n\t525: '?',\n\t530: '3',\n\t533: '+',\n\t535: '8',\n\t536: '0',\n\t537: '5K',\n\t539: 'R',\n\t542: '69NÑ',\n\t546: 'OQÓÔÕÖØ',\n\t547: '$UÚÜ',\n\t551: 'G',\n\t552: 'B',\n\t553: 'D…',\n\t554: 'CÇĆČ',\n\t555: 'H',\n\t576: '&',\n\t626: '#',\n\t693: '%',\n\t717: 'M',\n\t814: 'W',\n\t1000: '—',\n};\nconst CAP_HEIGHT = 0.797;\nconst glyphWidth = new Map();\nfor (const [width, glyphs] of Object.entries(GLYPH_WIDTHS)) {\n\tfor (const glyph of glyphs) glyphWidth.set(glyph, Number(width));\n}\nconst textWidth = (text, size) =>\n\t([...text].reduce((sum, glyph) => sum + (glyphWidth.get(glyph) ?? 560), 0) * size) / 1000;\n\nfunction wrap(text, size, maxWidth) {\n\tconst lines = [];\n\tlet line = '';\n\tfor (const word of text.split(' ')) {\n\t\tconst next = line ? `${line} ${word}` : word;\n\t\tif (line && textWidth(next, size) > maxWidth) {\n\t\t\tlines.push(line);\n\t\t\tline = word;\n\t\t} else {\n\t\t\tline = next;\n\t\t}\n\t}\n\tif (line) lines.push(line);\n\treturn lines;\n}\n\n// Narrow the lines while the line count stays the same, so the last line is not one lonely word.\nfunction balance(text, size, maxWidth) {\n\tlet best = wrap(text, size, maxWidth);\n\tfor (let width = maxWidth - 12; width > maxWidth / 2; width -= 12) {\n\t\tconst lines = wrap(text, size, width);\n\t\tif (lines.length !== best.length) break;\n\t\tbest = lines;\n\t}\n\treturn best;\n}\n\nconst display = (text) =>\n\tString(text ?? '')\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim()\n\t\t.toUpperCase();\n\nconst margin = px(64);\nconst textWidthMax = W - margin * 2;\nconst headlineText = display(post.title);\n\n// Phone apps cover the top and the bottom of a tall image, so the content stays between them.\nconst tall = H / W > 1.6;\nconst safeTop = Math.round(H * (tall ? 0.13 : 0.045));\nconst safeBottom = Math.round(H * (tall ? 0.17 : 0.045));\nconst zone = H - safeTop - safeBottom;\n\nconst logoSize = Math.round((W * Number(settings.logoMarkScale || 12)) / 100);\nconst labelSize = px(38);\nconst pillHeight = px(62);\nconst barHeight = px(10);\nconst gapHeader = px(28);\nconst gapPhoto = px(48);\nconst gapPill = px(40);\nconst fixedHeight = logoSize + gapHeader + barHeight + gapPhoto + pillHeight + gapPill;\n\nconst sourceWidth = Number(item.json?.size?.width) || W;\nconst sourceHeight = Number(item.json?.size?.height) || Math.round(W * 0.5625);\nconst naturalHeight = Math.round((sourceHeight * W) / sourceWidth);\n// A wide photo stays whole. A tall photo is cut to this height when the headline needs the room.\nconst photoKeep = Math.min(naturalHeight, Math.round(W * 0.62));\nconst photoFloor = Math.min(naturalHeight, px(400));\n\nconst MAX_LINES = 5;\nlet headline;\nfor (let size = 96; size >= 60; size -= 4) {\n\tconst fontSize = px(size);\n\tconst lines = wrap(headlineText, fontSize, textWidthMax);\n\tconst leading = Math.round(fontSize * 1.14);\n\tconst blockHeight = Math.round(fontSize * CAP_HEIGHT) + (lines.length - 1) * leading;\n\tconst photoRoom = zone - fixedHeight - blockHeight;\n\theadline = { fontSize, lines, leading, blockHeight, photoRoom };\n\tif (lines.length <= 4 && photoRoom >= photoKeep) break;\n}\nif (headline.lines.length > MAX_LINES) {\n\tconst kept = headline.lines.slice(0, MAX_LINES);\n\tlet last = kept[MAX_LINES - 1];\n\twhile (last.includes(' ') && textWidth(`${last}…`, headline.fontSize) > textWidthMax) {\n\t\tlast = last.slice(0, last.lastIndexOf(' '));\n\t}\n\tkept[MAX_LINES - 1] = `${last}…`;\n\theadline.lines = kept;\n\theadline.blockHeight =\n\t\tMath.round(headline.fontSize * CAP_HEIGHT) + (MAX_LINES - 1) * headline.leading;\n\theadline.photoRoom = zone - fixedHeight - headline.blockHeight;\n} else {\n\theadline.lines = balance(headlineText, headline.fontSize, textWidthMax);\n}\n\nconst photoHeight = Math.max(photoFloor, Math.min(naturalHeight, headline.photoRoom));\nconst stackHeight = fixedHeight + photoHeight + headline.blockHeight;\nconst top = Math.max(px(40), safeTop + Math.round((zone - stackHeight) / 2));\n\nconst logoY = top;\nconst photoY = logoY + logoSize + gapHeader;\nconst barY = photoY + photoHeight;\nconst pillY = barY + barHeight + gapPhoto;\nconst headlineY = pillY + pillHeight + gapPill + Math.round(headline.fontSize * CAP_HEIGHT);\n\nconst label = display(settings.postLabel || 'UFC NEWS');\nconst pillPad = px(22);\nconst pillWidth = Math.round(textWidth(label, labelSize)) + pillPad * 2;\n\nconst layout = {\n\twidth: W,\n\theight: H,\n\tlogo: {\n\t\tsize: logoSize,\n\t\t// The logo file has an empty border. Shift it so the mark lines up with the text.\n\t\tx: margin - Math.round(logoSize * 0.1),\n\t\ty: logoY,\n\t},\n\tsource: {\n\t\ttext: `VIA ${display(post.source)}`,\n\t\tfontSize: px(30),\n\t\tright: margin,\n\t\ty: logoY + Math.round(logoSize / 2) + px(11),\n\t},\n\tphoto: {\n\t\ty: photoY,\n\t\twidth: W,\n\t\theight: photoHeight,\n\t\tfullHeight: naturalHeight,\n\t\t// Cut more from the bottom than from the top, because faces are near the top.\n\t\tcropY: Math.round((naturalHeight - photoHeight) * 0.25),\n\t},\n\tbar: { y1: barY, y2: barY + barHeight },\n\tpill: {\n\t\tx1: margin,\n\t\ty1: pillY,\n\t\tx2: margin + pillWidth,\n\t\ty2: pillY + pillHeight,\n\t\tradius: px(8),\n\t\ttext: label,\n\t\tfontSize: labelSize,\n\t\ttextX: margin + pillPad,\n\t\ttextY: pillY + Math.round((pillHeight + labelSize * CAP_HEIGHT) / 2),\n\t},\n\theadline: {\n\t\tfontSize: headline.fontSize,\n\t\tx: margin,\n\t\tlines: Array.from({ length: MAX_LINES }, (_, i) => headline.lines[i] ?? ''),\n\t\ty: Array.from({ length: MAX_LINES }, (_, i) => headlineY + i * headline.leading),\n\t},\n};\n\nreturn [{ json: { ...post, layout }, binary: item.binary }];\n"
+			},
+			"id": "5650052f-5859-4e83-b89b-d6c4f0f6345c",
+			"name": "Plan story layout",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
 			"position": [
-				2530,
+				3520,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"mode": "runOnceForAllItems",
+				"jsCode": "// Local dev only: read logo from disk with fallback (needs NODE_FUNCTION_ALLOW_BUILTIN=fs).\nconst fs = require('fs');\n\nconst prep = $input.first();\nconst settings = $('Settings').first().json;\n\nconst repoLogo =\n\t'/Users/figueroaf/Desktop/Projects/Automated-Insta-Posts/workflows/assets/fw-logo-black-bg.png';\nconst homeLogo = '/Users/figueroaf/.n8n-files/fw-logo-black-bg.png';\n\nconst primary = String(settings.logoFilePath || '').trim() || homeLogo;\nconst backup = primary === homeLogo ? repoLogo : homeLogo;\n\nlet logoPath;\nif (fs.existsSync(primary)) {\n\tlogoPath = primary;\n} else if (fs.existsSync(backup)) {\n\tlogoPath = backup;\n} else {\n\tthrow new Error(`Logo not found. Checked:\\n${primary}\\n${backup}\\nRun pnpm dev:up to copy the logo.`);\n}\n\nconst logoBuffer = fs.readFileSync(logoPath);\n\nreturn [\n\t{\n\t\tjson: { ...prep.json, logoUsedPath: logoPath },\n\t\tbinary: {\n\t\t\t...prep.binary,\n\t\t\tlogo: {\n\t\t\t\tdata: logoBuffer.toString('base64'),\n\t\t\t\tmimeType: 'image/png',\n\t\t\t\tfileName: 'fw-logo-black-bg.png',\n\t\t\t\tfileExtension: 'png',\n\t\t\t},\n\t\t},\n\t},\n];\n"
+			},
+			"id": "57866a39-22e3-4fa2-862e-0703d3853c13",
+			"name": "Load logo",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				3740,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"operation": "multiStep",
+				"dataPropertyName": "photo",
+				"operations": {
+					"operations": [
+						{
+							"operation": "resize",
+							"width": "={{ $json.layout.photo.width }}",
+							"height": "={{ $json.layout.photo.fullHeight }}",
+							"resizeOption": "ignoreAspectRatio"
+						},
+						{
+							"operation": "crop",
+							"width": "={{ $json.layout.photo.width }}",
+							"height": "={{ $json.layout.photo.height }}",
+							"positionX": 0,
+							"positionY": "={{ $json.layout.photo.cropY }}"
+						}
+					]
+				},
+				"options": {
+					"format": "png"
+				}
+			},
+			"id": "aa154ab1-6cd1-4a55-b32f-6af5ee1a3daf",
+			"name": "Fit photo",
+			"type": "n8n-nodes-base.editImage",
+			"typeVersion": 2,
+			"position": [
+				3960,
 				60
 			]
 		},
@@ -322,38 +464,170 @@
 			"parameters": {
 				"operation": "resize",
 				"dataPropertyName": "logo",
-				"width": "={{ Math.round(1080 * $('Settings').first().json.logoMarkScale / 100) }}",
-				"height": "={{ Math.round(1080 * $('Settings').first().json.logoMarkScale / 100) }}",
+				"width": "={{ $json.layout.logo.size }}",
+				"height": "={{ $json.layout.logo.size }}",
 				"resizeOption": "ignoreAspectRatio",
 				"options": {
 					"destinationKey": "logo"
 				}
 			},
-			"id": "96bce165-f35b-4cb9-b092-f99f34bcd0c0",
+			"id": "be24ab82-1afd-48b4-8ea8-42c265b2c2fd",
 			"name": "Resize logo",
 			"type": "n8n-nodes-base.editImage",
 			"typeVersion": 2,
 			"position": [
-				2750,
+				4180,
 				60
 			]
 		},
 		{
 			"parameters": {
-				"operation": "composite",
+				"operation": "multiStep",
 				"dataPropertyName": "data",
-				"dataPropertyNameComposite": "logo",
-				"operator": "Over",
-				"positionX": "={{ Math.round(1080 - 1080 * $(\"Settings\").first().json.logoMarkScale / 100 - $(\"Settings\").first().json.logoMarkPad) }}",
-				"positionY": "={{ Math.round(1080 - 1080 * $(\"Settings\").first().json.logoMarkScale / 100 - $(\"Settings\").first().json.logoMarkPad) }}",
-				"options": {}
+				"operations": {
+					"operations": [
+						{
+							"operation": "draw",
+							"primitive": "rectangle",
+							"color": "#0000005C",
+							"startPositionX": 0,
+							"startPositionY": 0,
+							"endPositionX": "={{ $json.layout.width }}",
+							"endPositionY": "={{ $json.layout.height }}",
+							"cornerRadius": 0
+						},
+						{
+							"operation": "composite",
+							"dataPropertyNameComposite": "photo",
+							"operator": "Over",
+							"positionX": 0,
+							"positionY": "={{ $json.layout.photo.y }}"
+						},
+						{
+							"operation": "draw",
+							"primitive": "rectangle",
+							"color": "={{ $('Settings').first().json.accentColor }}",
+							"startPositionX": 0,
+							"startPositionY": "={{ $json.layout.bar.y1 }}",
+							"endPositionX": "={{ $json.layout.width }}",
+							"endPositionY": "={{ $json.layout.bar.y2 }}",
+							"cornerRadius": 0
+						},
+						{
+							"operation": "draw",
+							"primitive": "rectangle",
+							"color": "={{ $('Settings').first().json.accentColor }}",
+							"startPositionX": "={{ $json.layout.pill.x1 }}",
+							"startPositionY": "={{ $json.layout.pill.y1 }}",
+							"endPositionX": "={{ $json.layout.pill.x2 }}",
+							"endPositionY": "={{ $json.layout.pill.y2 }}",
+							"cornerRadius": "={{ $json.layout.pill.radius }}"
+						},
+						{
+							"operation": "text",
+							"text": "={{ $json.layout.pill.text }}",
+							"font": "={{ $('Settings').first().json.headlineFont }}",
+							"fontSize": "={{ $json.layout.pill.fontSize }}",
+							"fontColor": "#FFFFFF",
+							"positionX": "={{ $json.layout.pill.textX }}",
+							"positionY": "={{ $json.layout.pill.textY }}",
+							"horizontalAlignment": "west",
+							"verticalAlignment": "north",
+							"lineLength": 500
+						},
+						{
+							"operation": "composite",
+							"dataPropertyNameComposite": "logo",
+							"operator": "Over",
+							"positionX": "={{ $json.layout.logo.x }}",
+							"positionY": "={{ $json.layout.logo.y }}"
+						},
+						{
+							"operation": "text",
+							"text": "={{ $json.layout.source.text }}",
+							"font": "={{ $('Settings').first().json.detailFont }}",
+							"fontSize": "={{ $json.layout.source.fontSize }}",
+							"fontColor": "#D6D6D6",
+							"positionX": "={{ $json.layout.source.right }}",
+							"positionY": "={{ $json.layout.source.y }}",
+							"horizontalAlignment": "east",
+							"verticalAlignment": "north",
+							"lineLength": 500
+						},
+						{
+							"operation": "text",
+							"text": "={{ $json.layout.headline.lines[0] }}",
+							"font": "={{ $('Settings').first().json.headlineFont }}",
+							"fontSize": "={{ $json.layout.headline.fontSize }}",
+							"fontColor": "#FFFFFF",
+							"positionX": "={{ $json.layout.headline.x }}",
+							"positionY": "={{ $json.layout.headline.y[0] }}",
+							"horizontalAlignment": "west",
+							"verticalAlignment": "north",
+							"lineLength": 500
+						},
+						{
+							"operation": "text",
+							"text": "={{ $json.layout.headline.lines[1] }}",
+							"font": "={{ $('Settings').first().json.headlineFont }}",
+							"fontSize": "={{ $json.layout.headline.fontSize }}",
+							"fontColor": "#FFFFFF",
+							"positionX": "={{ $json.layout.headline.x }}",
+							"positionY": "={{ $json.layout.headline.y[1] }}",
+							"horizontalAlignment": "west",
+							"verticalAlignment": "north",
+							"lineLength": 500
+						},
+						{
+							"operation": "text",
+							"text": "={{ $json.layout.headline.lines[2] }}",
+							"font": "={{ $('Settings').first().json.headlineFont }}",
+							"fontSize": "={{ $json.layout.headline.fontSize }}",
+							"fontColor": "#FFFFFF",
+							"positionX": "={{ $json.layout.headline.x }}",
+							"positionY": "={{ $json.layout.headline.y[2] }}",
+							"horizontalAlignment": "west",
+							"verticalAlignment": "north",
+							"lineLength": 500
+						},
+						{
+							"operation": "text",
+							"text": "={{ $json.layout.headline.lines[3] }}",
+							"font": "={{ $('Settings').first().json.headlineFont }}",
+							"fontSize": "={{ $json.layout.headline.fontSize }}",
+							"fontColor": "#FFFFFF",
+							"positionX": "={{ $json.layout.headline.x }}",
+							"positionY": "={{ $json.layout.headline.y[3] }}",
+							"horizontalAlignment": "west",
+							"verticalAlignment": "north",
+							"lineLength": 500
+						},
+						{
+							"operation": "text",
+							"text": "={{ $json.layout.headline.lines[4] }}",
+							"font": "={{ $('Settings').first().json.headlineFont }}",
+							"fontSize": "={{ $json.layout.headline.fontSize }}",
+							"fontColor": "#FFFFFF",
+							"positionX": "={{ $json.layout.headline.x }}",
+							"positionY": "={{ $json.layout.headline.y[4] }}",
+							"horizontalAlignment": "west",
+							"verticalAlignment": "north",
+							"lineLength": 500
+						}
+					]
+				},
+				"options": {
+					"format": "jpeg",
+					"quality": 92,
+					"fileName": "cover.jpg"
+				}
 			},
-			"id": "e392a433-7856-4e42-ba13-e122b6317658",
-			"name": "Apply logo watermark",
+			"id": "6c26013c-98e7-4873-bc46-b49df180c72e",
+			"name": "Compose story image",
 			"type": "n8n-nodes-base.editImage",
 			"typeVersion": 2,
 			"position": [
-				2970,
+				4400,
 				60
 			]
 		},
@@ -364,25 +638,25 @@
 				"dataPropertyName": "data",
 				"options": {}
 			},
-			"id": "3bb1fc70-c475-4b9e-b1f8-fd8f526c45af",
+			"id": "8c779b3a-352c-493e-8f7e-f28a5c1db6f7",
 			"name": "Write post image",
 			"type": "n8n-nodes-base.readWriteFile",
 			"typeVersion": 1.1,
 			"position": [
-				3190,
+				4620,
 				60
 			]
 		},
 		{
 			"parameters": {
-				"jsCode": "// Build caption + meta binaries while keeping export paths on json (Convert to File clears json).\nconst post = $json;\nconst caption = String(post.caption ?? '').trim() || '(No caption generated — check Ollama.)';\n\nconst payload = {\n\ttitle: post.title,\n\tlink: post.link,\n\tsource: post.source,\n\tpublishedAt: post.publishedAt,\n\timageUrl: post.imageUrl,\n\tsourceImage: post.sourceImage,\n\tcaption,\n\tsavedImage: post.imagePath,\n\tsavedCaption: post.captionPath,\n\texportedAt: new Date().toISOString(),\n};\nconst metaText = JSON.stringify(payload, null, 2);\n\nconst baseName = String(post.fileBase ?? 'ufc-export').split('/').pop();\n\nconst toBinary = (text, mimeType, fileName) => ({\n\tdata: Buffer.from(text, 'utf8').toString('base64'),\n\tmimeType,\n\tfileName,\n});\n\nreturn [\n\t{\n\t\tjson: { ...post, caption, metaText },\n\t\tbinary: {\n\t\t\tcaptionFile: toBinary(caption, 'text/plain', `${baseName}-caption.txt`),\n\t\t\tmetaFile: toBinary(metaText, 'application/json', `${baseName}-meta.json`),\n\t\t},\n\t},\n];"
+				"jsCode": "// Build caption + meta binaries while keeping export paths on json (Convert to File clears json).\nconst post = $json;\nconst caption = String(post.caption ?? '').trim() || '(No caption generated — check Ollama.)';\n\nconst payload = {\n\ttitle: post.title,\n\tlink: post.link,\n\tsource: post.source,\n\tpublishedAt: post.publishedAt,\n\tsourceImage: post.sourceImage,\n\tphotoUrl: post.photoUrl,\n\tbackdropUrl: post.backdropUrl,\n\timageSize: post.layout ? `${post.layout.width}x${post.layout.height}` : undefined,\n\tcaption,\n\tcaptionSource: post.captionSource,\n\tcaptionError: post.captionError,\n\texportDir: post.exportDir,\n\texportId: post.exportId,\n\tsavedImage: post.imagePath,\n\tsavedCaption: post.captionPath,\n\texportedAt: new Date().toISOString(),\n};\nconst metaText = JSON.stringify(payload, null, 2);\n\nconst toBinary = (text, mimeType, fileName) => ({\n\tdata: Buffer.from(text, 'utf8').toString('base64'),\n\tmimeType,\n\tfileName,\n});\n\nreturn [\n\t{\n\t\tjson: { ...post, caption, metaText },\n\t\tbinary: {\n\t\t\tcaptionFile: toBinary(caption, 'text/plain', 'note.txt'),\n\t\t\tmetaFile: toBinary(metaText, 'application/json', 'data.json'),\n\t\t},\n\t},\n];"
 			},
-			"id": "0e0418d0-5151-41da-90ce-3c210664705e",
+			"id": "06683548-0f97-4300-88ff-c8558385fcfa",
 			"name": "Finalize export",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
 			"position": [
-				3410,
+				4840,
 				60
 			]
 		},
@@ -393,12 +667,12 @@
 				"dataPropertyName": "captionFile",
 				"options": {}
 			},
-			"id": "c0f9833f-61a5-4e3b-ad79-9a23dfef0439",
+			"id": "379c7ba4-e01f-460e-a48f-eb83a40aae7c",
 			"name": "Write caption file",
 			"type": "n8n-nodes-base.readWriteFile",
 			"typeVersion": 1.1,
 			"position": [
-				3630,
+				5060,
 				60
 			]
 		},
@@ -409,25 +683,25 @@
 				"dataPropertyName": "metaFile",
 				"options": {}
 			},
-			"id": "5723d0a7-60da-4ec8-b018-dfd7ebab0ac5",
+			"id": "0db7a242-99da-444e-9064-40258c5c723c",
 			"name": "Write meta file",
 			"type": "n8n-nodes-base.readWriteFile",
 			"typeVersion": 1.1,
 			"position": [
-				3850,
+				5280,
 				60
 			]
 		},
 		{
 			"parameters": {
-				"jsCode": "// Remember the story so the next run picks a different one.\nconst post = $('Prepare export paths').first().json;\nconst memory = $getWorkflowStaticData('global');\nmemory.postedKeys = [...(memory.postedKeys ?? []), ...post.keys].slice(-2000);\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\texported: true,\n\t\t\timagePath: post.imagePath,\n\t\t\tcaptionPath: post.captionPath,\n\t\t\tmetaPath: post.metaPath,\n\t\t\ttitle: post.title,\n\t\t\tlink: post.link,\n\t\t\texportedAt: new Date().toISOString(),\n\t\t},\n\t},\n];"
+				"jsCode": "// Remember the story so the next run picks a different one.\nconst post = $('Prepare export paths').first().json;\nconst memory = $getWorkflowStaticData('global');\nmemory.postedKeys = [...(memory.postedKeys ?? []), ...post.keys].slice(-2000);\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\texported: true,\n\t\t\texportDir: post.exportDir,\n\t\t\timagePath: post.imagePath,\n\t\t\tcaptionPath: post.captionPath,\n\t\t\tmetaPath: post.metaPath,\n\t\t\ttitle: post.title,\n\t\t\tlink: post.link,\n\t\t\texportedAt: new Date().toISOString(),\n\t\t},\n\t},\n];"
 			},
-			"id": "18fd221c-a0b6-440b-acac-47cd93b3e410",
+			"id": "bf51ceac-beb1-48a7-82dc-0f8e6f38e81f",
 			"name": "Remember exported story",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
 			"position": [
-				4070,
+				5500,
 				60
 			]
 		}
@@ -547,47 +821,102 @@
 			"main": [
 				[
 					{
-						"node": "Download post image",
+						"node": "Build caption prompt",
 						"type": "main",
 						"index": 0
 					}
 				]
 			]
 		},
-		"Download post image": {
+		"Build caption prompt": {
 			"main": [
 				[
 					{
-						"node": "Ensure image downloaded",
+						"node": "Ask Ollama for caption",
 						"type": "main",
 						"index": 0
 					}
 				]
 			]
 		},
-		"Ensure image downloaded": {
+		"Ask Ollama for caption": {
 			"main": [
 				[
 					{
-						"node": "Read logo asset",
+						"node": "Finish caption",
 						"type": "main",
 						"index": 0
 					}
 				]
 			]
 		},
-		"Read logo asset": {
+		"Finish caption": {
 			"main": [
 				[
 					{
-						"node": "Attach logo binary",
+						"node": "Download backdrop",
 						"type": "main",
 						"index": 0
 					}
 				]
 			]
 		},
-		"Attach logo binary": {
+		"Download backdrop": {
+			"main": [
+				[
+					{
+						"node": "Download photo",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Download photo": {
+			"main": [
+				[
+					{
+						"node": "Read photo size",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Read photo size": {
+			"main": [
+				[
+					{
+						"node": "Plan story layout",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Plan story layout": {
+			"main": [
+				[
+					{
+						"node": "Load logo",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Load logo": {
+			"main": [
+				[
+					{
+						"node": "Fit photo",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Fit photo": {
 			"main": [
 				[
 					{
@@ -602,14 +931,14 @@
 			"main": [
 				[
 					{
-						"node": "Apply logo watermark",
+						"node": "Compose story image",
 						"type": "main",
 						"index": 0
 					}
 				]
 			]
 		},
-		"Apply logo watermark": {
+		"Compose story image": {
 			"main": [
 				[
 					{

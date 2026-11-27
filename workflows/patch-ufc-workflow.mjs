@@ -21,7 +21,7 @@ Posts the newest UFC story to Instagram at the times you choose. A story is neve
 Manual test runs can post to Instagram but do not save the posted-story list unless the run was scheduled.`;
 
 const sourcesNote = `### News, AI captions, and branding
-- Edit sources in **News sources**.
+- Edit sources in **News sources** (UFC.com, ESPN MMA, MMA Fighting, Sherdog, MMA News, BJPenn, LowKick MMA, Cageside Press).
 - **Ollama** writes each caption from the headline and article summary. If Ollama is down, the workflow falls back to the RSS summary.
 - **logoPublicUrl** must be a public HTTPS link to your black-background logo PNG (file in \`workflows/assets/\`).
 - Images are converted to 1080×1080 JPEG and get the logo in the bottom-right via images.weserv.nl.`;
@@ -50,9 +50,14 @@ settingsNode.parameters.assignments.assignments.push(
 	{ id: 'logo-mark-pad', name: 'logoMarkPad', value: 22, type: 'number' },
 );
 
+const newsSourcesCode = readFileSync(new URL('./lib/news-sources.js', import.meta.url), 'utf8');
+const pickStoriesCode = readFileSync(new URL('./lib/pick-new-ufc-stories.js', import.meta.url), 'utf8');
+
 for (const node of workflow.nodes) {
 	if (node.name === 'Setup notes') node.parameters.content = setupNote;
 	if (node.name === 'Sources notes') node.parameters.content = sourcesNote;
+	if (node.name === 'News sources') node.parameters.jsCode = newsSourcesCode;
+	if (node.name === 'Pick new UFC stories') node.parameters.jsCode = pickStoriesCode;
 	if (node.name === 'Build Instagram posts') node.parameters.jsCode = buildCode;
 }
 

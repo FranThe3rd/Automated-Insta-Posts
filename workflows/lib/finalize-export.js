@@ -7,16 +7,20 @@ const payload = {
 	link: post.link,
 	source: post.source,
 	publishedAt: post.publishedAt,
-	imageUrl: post.imageUrl,
 	sourceImage: post.sourceImage,
+	photoUrl: post.photoUrl,
+	backdropUrl: post.backdropUrl,
+	imageSize: post.layout ? `${post.layout.width}x${post.layout.height}` : undefined,
 	caption,
+	captionSource: post.captionSource,
+	captionError: post.captionError,
+	exportDir: post.exportDir,
+	exportId: post.exportId,
 	savedImage: post.imagePath,
 	savedCaption: post.captionPath,
 	exportedAt: new Date().toISOString(),
 };
 const metaText = JSON.stringify(payload, null, 2);
-
-const baseName = String(post.fileBase ?? 'ufc-export').split('/').pop();
 
 const toBinary = (text, mimeType, fileName) => ({
 	data: Buffer.from(text, 'utf8').toString('base64'),
@@ -28,8 +32,8 @@ return [
 	{
 		json: { ...post, caption, metaText },
 		binary: {
-			captionFile: toBinary(caption, 'text/plain', `${baseName}-caption.txt`),
-			metaFile: toBinary(metaText, 'application/json', `${baseName}-meta.json`),
+			captionFile: toBinary(caption, 'text/plain', 'note.txt'),
+			metaFile: toBinary(metaText, 'application/json', 'data.json'),
 		},
 	},
 ];

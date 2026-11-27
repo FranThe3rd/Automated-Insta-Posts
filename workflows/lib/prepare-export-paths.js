@@ -1,35 +1,32 @@
-// Build local file paths under the Downloads folder.
+// One opaque folder per post with neutral filenames (needs fs — start n8n with pnpm dev:up).
+const fs = require('fs');
+
 const post = $json;
 const settings = $('Settings').first().json;
 let folder = String(settings.downloadsFolder || '').trim();
 if (!folder) folder = '/Users/figueroaf/.n8n-files';
 if (folder.startsWith('~/')) {
-  throw new Error(
-    'Set a full path in Settings → downloadsFolder (example: /Users/you/Downloads). Tilde (~) is not supported.',
-  );
+	throw new Error(
+		'Set a full path in Settings → downloadsFolder (example: /Users/you/Downloads). Tilde (~) is not supported.',
+	);
 }
 folder = folder.replace(/\/$/, '');
 
-const slug = String(post.title || 'ufc-story')
-	.toLowerCase()
-	.normalize('NFKD')
-	.replace(/[\u0300-\u036f]/g, '')
-	.replace(/[^a-z0-9]+/g, '-')
-	.replace(/^-+|-+$/g, '')
-	.slice(0, 48) || 'ufc-story';
-
-const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-const base = `${folder}/ufc-${stamp}-${slug}`;
+const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;
+const postDir = `${folder}/${id}`;
+fs.mkdirSync(postDir, { recursive: true });
 
 return [
 	{
 		json: {
 			...post,
 			downloadsFolder: folder,
-			fileBase: base,
-			imagePath: `${base}.jpg`,
-			captionPath: `${base}-caption.txt`,
-			metaPath: `${base}-meta.json`,
+			exportDir: postDir,
+			exportId: id,
+			fileBase: postDir,
+			imagePath: `${postDir}/cover.jpg`,
+			captionPath: `${postDir}/note.txt`,
+			metaPath: `${postDir}/data.json`,
 		},
 	},
 ];
