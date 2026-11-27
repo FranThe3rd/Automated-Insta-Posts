@@ -1,0 +1,521 @@
+{
+	"name": "UFC news to Instagram",
+	"nodes": [
+		{
+			"parameters": {
+				"content": "## UFC news → Instagram\n\nPosts the newest UFC story to Instagram at the times you choose. A story is never posted twice.\n\n### Setup\n1. **Instagram account**: Business or Creator, linked to a Facebook Page.\n2. **Credential**: Facebook Graph API token with `instagram_basic`, `instagram_content_publish`, `pages_show_list`.\n3. **Account ID**: `me/accounts?fields=instagram_business_account` → put id in **Settings**.\n4. **Local AI (Ollama)**: install [Ollama](https://ollama.com), run `ollama pull llama3.2`, and keep Ollama on `http://127.0.0.1:11434`. Set model in **Settings** if you use another tag.\n5. **Logo watermark**: upload `workflows/assets/fw-logo-black-bg.png` somewhere public (GitHub raw, Imgur, CDN) and paste the URL in **Settings → logoPublicUrl**. Instagram and the image proxy must reach it over HTTPS.\n6. **Post time**: edit **Schedule Trigger** (timezone in workflow Settings).\n7. **Publish** the workflow.\n\nManual test runs can post to Instagram but do not save the posted-story list unless the run was scheduled.",
+				"height": 600,
+				"width": 420
+			},
+			"id": "6fc2e32a-242a-4bcf-8071-ea0f95316ccb",
+			"name": "Setup notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [
+				-520,
+				-380
+			]
+		},
+		{
+			"parameters": {
+				"content": "### News, AI captions, and branding\n- Edit sources in **News sources**.\n- **Ollama** writes each caption from the headline and article summary. If Ollama is down, the workflow falls back to the RSS summary.\n- **logoPublicUrl** must be a public HTTPS link to your black-background logo PNG (file in `workflows/assets/`).\n- Images are converted to 1080×1080 JPEG and get the logo in the bottom-right via images.weserv.nl.",
+				"height": 220,
+				"width": 560,
+				"color": 5
+			},
+			"id": "f1bfd68b-e5f9-4c25-9b5a-2dc5c2774447",
+			"name": "Sources notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [
+				440,
+				-280
+			]
+		},
+		{
+			"parameters": {
+				"rule": {
+					"interval": [
+						{
+							"field": "days",
+							"daysInterval": 1,
+							"triggerAtHour": 9,
+							"triggerAtMinute": 0
+						}
+					]
+				}
+			},
+			"id": "441a5205-1e83-4062-871d-ae6156129e17",
+			"name": "Schedule Trigger",
+			"type": "n8n-nodes-base.scheduleTrigger",
+			"typeVersion": 1.2,
+			"position": [
+				0,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "3e51631a-9165-4c48-9c37-228b135ccef5",
+							"name": "instagramAccountId",
+							"value": "YOUR_INSTAGRAM_BUSINESS_ACCOUNT_ID",
+							"type": "string"
+						},
+						{
+							"id": "7184b143-8c2d-4cf3-b3c8-f56ffd6d1400",
+							"name": "hashtags",
+							"value": "#UFC #MMA #UFCNews #MixedMartialArts #FightNews",
+							"type": "string"
+						},
+						{
+							"id": "5711e0f1-d23c-4796-ae74-13ba41faac69",
+							"name": "maxStoryAgeHours",
+							"value": 48,
+							"type": "number"
+						},
+						{
+							"id": "ollama-base-url",
+							"name": "ollamaBaseUrl",
+							"value": "http://127.0.0.1:11434",
+							"type": "string"
+						},
+						{
+							"id": "ollama-model",
+							"name": "ollamaModel",
+							"value": "llama3.2",
+							"type": "string"
+						},
+						{
+							"id": "logo-public-url",
+							"name": "logoPublicUrl",
+							"value": "PASTE_PUBLIC_HTTPS_URL_TO_workflows_assets_fw-logo-black-bg.png",
+							"type": "string"
+						},
+						{
+							"id": "logo-mark-scale",
+							"name": "logoMarkScale",
+							"value": 14,
+							"type": "number"
+						},
+						{
+							"id": "logo-mark-pad",
+							"name": "logoMarkPad",
+							"value": 22,
+							"type": "number"
+						}
+					]
+				},
+				"options": {}
+			},
+			"id": "b4962cc5-a0e1-468f-98f4-d1429accab50",
+			"name": "Settings",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [
+				220,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Add or remove news sources here. Set allUfc to true for a feed that only publishes UFC news.\n// A source works only if its article images can be downloaded by other servers.\nconst feeds = [\n  { name: 'UFC.com', url: 'https://www.ufc.com/rss/news', allUfc: true },\n  { name: 'MMA Fighting', url: 'https://www.mmafighting.com/rss/index.xml' },\n  { name: 'Sherdog', url: 'https://www.sherdog.com/rss/news.xml' },\n  { name: 'MMA News', url: 'https://www.mmanews.com/feed' },\n];\n\nreturn feeds.map((feed) => ({ json: feed }));"
+			},
+			"id": "cc816ed1-b530-40ae-91c5-ca2a3642ae1c",
+			"name": "News sources",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				440,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"url": "={{ $json.url }}",
+				"options": {
+					"customFields": "media:content, media:thumbnail"
+				}
+			},
+			"id": "04057dce-b76e-4666-abfc-b652e72841f7",
+			"name": "Read news feeds",
+			"type": "n8n-nodes-base.rssFeedRead",
+			"typeVersion": 1.2,
+			"position": [
+				660,
+				0
+			],
+			"onError": "continueRegularOutput"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Pick the newest UFC stories that this workflow has not posted or skipped yet.\nconst settings = $('Settings').first().json;\nconst feeds = $('News sources').all().map((item) => item.json);\nconst memory = $getWorkflowStaticData('global');\nconst seen = new Set([...(memory.postedKeys ?? []), ...(memory.skippedKeys ?? [])]);\n\nconst maxAgeMs = Number(settings.maxStoryAgeHours || 48) * 60 * 60 * 1000;\nconst candidateCount = 10;\n\nconst host = (url) => {\n  try {\n    return new URL(url).hostname.replace(/^www\\./, '').toLowerCase();\n  } catch {\n    return '';\n  }\n};\n\nconst linkKey = (url) => {\n  try {\n    const parsed = new URL(url);\n    return `link:${parsed.hostname.replace(/^www\\./, '')}${parsed.pathname.replace(/\\/+$/, '')}`.toLowerCase();\n  } catch {\n    return `link:${String(url).toLowerCase()}`;\n  }\n};\n\nconst titleKey = (title) =>\n  `title:${String(title).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()}`;\n\nconst firstUrl = (value) => {\n  if (!value) return '';\n  if (typeof value === 'string') return value;\n  if (Array.isArray(value)) return firstUrl(value[0]);\n  return value.url || value.$?.url || value.href || '';\n};\n\nconst looksLikeImage = (url) => /\\.(jpe?g|png|webp|gif|avif)(\\?|$)/i.test(url);\n\nconst decodeUrl = (url) => String(url).replace(/&#0?38;|&amp;/g, '&');\n\nfunction feedImage(item) {\n  const enclosure = item.enclosure;\n  if (enclosure?.url && (/^image\\//.test(enclosure.type || '') || looksLikeImage(enclosure.url))) {\n    return decodeUrl(enclosure.url);\n  }\n  const media = firstUrl(item['media:content']) || firstUrl(item['media:thumbnail']);\n  if (media) return decodeUrl(media);\n  const html = `${item['content:encoded'] || ''} ${item.content || ''}`;\n  const img = html.match(/<img[^>]+src=[\"']([^\"']+)[\"']/i);\n  return img ? decodeUrl(img[1]) : '';\n}\n\nconst feedForLink = (link) => {\n  const linkHost = host(link);\n  return feeds.find((feed) => {\n    const feedHost = host(feed.url);\n    return linkHost === feedHost || linkHost.endsWith(`.${feedHost}`) || feedHost.endsWith(`.${linkHost}`);\n  });\n};\n\nconst now = Date.now();\nconst stories = [];\nconst keysInThisRun = new Set();\n\nfor (const { json: item } of $('Read news feeds').all()) {\n  if (item.error || !item.title || !item.link) continue;\n\n  const published = new Date(item.isoDate || item.pubDate || 0).getTime();\n  if (!published || now - published > maxAgeMs || published > now + 60 * 60 * 1000) continue;\n\n  const feed = feedForLink(item.link);\n  const categories = Array.isArray(item.categories) ? item.categories.join(' ') : '';\n  const text = `${item.title} ${categories} ${item.link}`;\n  if (!feed?.allUfc && !/(^|[^a-z])ufc([^a-z]|$)/i.test(text)) continue;\n\n  const keys = [linkKey(item.link), titleKey(item.title)];\n  if (keys.some((key) => seen.has(key) || keysInThisRun.has(key))) continue;\n  keys.forEach((key) => keysInThisRun.add(key));\n\n  stories.push({\n    title: String(item.title).trim(),\n    link: item.link,\n    source: feed?.name || host(item.link),\n    publishedAt: new Date(published).toISOString(),\n    snippet: String(item.contentSnippet || '').slice(0, 1500),\n    feedImage: feedImage(item),\n    keys,\n  });\n}\n\nstories.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));\n\nreturn stories.slice(0, candidateCount).map((story) => ({ json: story }));"
+			},
+			"id": "490e5b82-240d-40d5-950c-8222e01e6fd9",
+			"name": "Pick new UFC stories",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				880,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"url": "={{ $json.link }}",
+				"sendHeaders": true,
+				"headerParameters": {
+					"parameters": [
+						{
+							"name": "User-Agent",
+							"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
+						}
+					]
+				},
+				"options": {
+					"response": {
+						"response": {
+							"neverError": true,
+							"responseFormat": "text"
+						}
+					},
+					"timeout": 15000
+				}
+			},
+			"id": "aff0e6ea-ae8a-44a0-b952-a2e2964849ac",
+			"name": "Fetch article pages",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
+			"position": [
+				1100,
+				0
+			],
+			"onError": "continueRegularOutput"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Build Instagram posts with Ollama captions and a bottom-right logo watermark.\nconst settings = $('Settings').first().json;\nconst stories = $('Pick new UFC stories').all();\nconst pages = $input.all();\n\nconst decode = (text) =>\n\tString(text)\n\t\t.replace(/&amp;|&#0?38;/g, '&')\n\t\t.replace(/&quot;/g, '\"')\n\t\t.replace(/&#0?39;|&apos;/g, \"'\")\n\t\t.replace(/&#8217;/g, '’')\n\t\t.replace(/&#8216;/g, '‘')\n\t\t.replace(/&#8220;/g, '“')\n\t\t.replace(/&#8221;/g, '”')\n\t\t.replace(/&#8230;/g, '…')\n\t\t.replace(/&nbsp;/g, ' ')\n\t\t.replace(/&lt;/g, '<')\n\t\t.replace(/&gt;/g, '>');\n\nfunction metaContent(html, names) {\n\tif (typeof html !== 'string') return '';\n\tfor (const tag of html.match(/<meta\\b[^>]*>/gi) || []) {\n\t\tconst name = tag.match(/(?:property|name)\\s*=\\s*[\"']([^\"']+)[\"']/i)?.[1]?.toLowerCase();\n\t\tif (!names.includes(name)) continue;\n\t\tconst content = tag.match(/content\\s*=\\s*\"([^\"]*)\"|content\\s*=\\s*'([^']*)'/i);\n\t\tconst value = content?.[1] ?? content?.[2];\n\t\tif (value) return decode(value).trim();\n\t}\n\treturn '';\n}\n\nfunction pageImage(html) {\n\tconst url = metaContent(html, ['og:image', 'og:image:secure_url', 'twitter:image', 'twitter:image:src']);\n\treturn /^https?:\\/\\//i.test(url) ? url : '';\n}\n\nconst pageSummary = (html) => metaContent(html, ['og:description', 'description', 'twitter:description']);\n\nfunction cleanSnippet(text) {\n\treturn decode(text)\n\t\t.replace(/The post .* appeared first on .*$/is, '')\n\t\t.replace(/Read the Full Article Here/gi, '')\n\t\t.replace(/\\s*\\[(?:…|\\.\\.\\.)\\]\\s*$/, '…')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim();\n}\n\nfunction shorten(text, max) {\n\tif (text.length <= max) return text;\n\tconst cut = text.slice(0, max);\n\treturn `${cut.slice(0, Math.max(cut.lastIndexOf(' '), max - 20)).trim()}…`;\n}\n\nfunction fallbackCaption(story, html) {\n\tconst title = decode(story.title);\n\tconst snippet = shorten(cleanSnippet(pageSummary(html) || story.snippet), 500);\n\treturn snippet && snippet !== title ? `${title}\\n\\n${snippet}` : title;\n}\n\nfunction instagramImage(source) {\n\tlet url = `https://images.weserv.nl/?url=${encodeURIComponent(source)}&w=1080&h=1080&fit=contain&cbg=000000&output=jpg&q=90`;\n\tconst logo = String(settings.logoPublicUrl || '').trim();\n\tif (!logo || logo.includes('PASTE_PUBLIC')) return url;\n\tconst scale = Number(settings.logoMarkScale || 14);\n\tconst pad = Number(settings.logoMarkPad || 22);\n\treturn `${url}&mark=${encodeURIComponent(logo)}&markpos=bottom-right&markpad=${pad}&markscale=${scale}`;\n}\n\nasync function ollamaCaption(story, html) {\n\tconst base = String(settings.ollamaBaseUrl || 'http://127.0.0.1:11434').replace(/\\/$/, '');\n\tconst model = String(settings.ollamaModel || 'llama3.2');\n\tconst summary = shorten(cleanSnippet(pageSummary(html) || story.snippet), 700);\n\tconst prompt = `Write an Instagram caption for a UFC news post.\n\nHeadline: ${decode(story.title)}\nSummary: ${summary}\nSource: ${story.source}\n\nRules:\n- Two short paragraphs, under 120 words total.\n- Energetic fight-fan voice.\n- Use only facts from the headline and summary.\n- No hashtags, no emojis, no bullet lists.\n- Do not mention Instagram.`;\n\n\ttry {\n\t\tconst res = await fetch(`${base}/api/generate`, {\n\t\t\tmethod: 'POST',\n\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\tbody: JSON.stringify({\n\t\t\t\tmodel,\n\t\t\t\tprompt,\n\t\t\t\tstream: false,\n\t\t\t\toptions: { temperature: 0.65, num_predict: 240 },\n\t\t\t}),\n\t\t\tsignal: AbortSignal.timeout(90000),\n\t\t});\n\t\tif (!res.ok) throw new Error(`ollama ${res.status}`);\n\t\tconst data = await res.json();\n\t\tconst text = String(data.response || '').trim();\n\t\treturn text || fallbackCaption(story, html);\n\t} catch {\n\t\treturn fallbackCaption(story, html);\n\t}\n}\n\nreturn (async () => {\n\tconst posts = [];\n\tfor (let i = 0; i < stories.length; i++) {\n\t\tconst story = stories[i].json;\n\t\tconst html = pages[i]?.json?.data;\n\t\tconst sourceImage = pageImage(html) || story.feedImage;\n\t\tif (!sourceImage) continue;\n\n\t\tconst body = await ollamaCaption(story, html);\n\t\tconst footer = [`Source: ${story.source}`, `Full story: ${story.link}`, '', settings.hashtags || '']\n\t\t\t.join('\\n')\n\t\t\t.trim();\n\t\tconst caption = shorten(body, 2200 - footer.length - 4) + `\\n\\n${footer}`;\n\n\t\tposts.push({\n\t\t\tjson: {\n\t\t\t\t...story,\n\t\t\t\tsourceImage,\n\t\t\t\timageUrl: instagramImage(sourceImage),\n\t\t\t\tcaption,\n\t\t\t},\n\t\t});\n\t}\n\treturn posts;\n})();"
+			},
+			"id": "3d1a0e83-4a94-44b7-9adf-af092c0b15c6",
+			"name": "Build Instagram posts",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				1320,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"method": "HEAD",
+				"url": "={{ $json.imageUrl }}",
+				"options": {
+					"response": {
+						"response": {
+							"fullResponse": true,
+							"neverError": true,
+							"responseFormat": "text"
+						}
+					},
+					"timeout": 30000
+				}
+			},
+			"id": "6432e05b-61e1-42e9-9bb2-ac4bdf4b6b81",
+			"name": "Check images",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
+			"position": [
+				1540,
+				0
+			],
+			"onError": "continueRegularOutput"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Choose the newest post whose image Instagram can load.\n// Each failed Instagram attempt runs this node again, so run N takes the next working post.\nconst posts = $('Build Instagram posts').all();\nconst checks = $('Check images').all();\n\nconst working = posts.filter((post, i) => {\n  const check = checks[i]?.json ?? {};\n  const type = String(check.headers?.['content-type'] ?? '');\n  return check.statusCode === 200 && type.startsWith('image/jpeg');\n});\n\nconst post = working[$runIndex];\nreturn post ? [{ json: post.json }] : [];"
+			},
+			"id": "be952a29-0cba-4c74-9c33-0c0244fa4789",
+			"name": "Choose story to post",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				1760,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"hostUrl": "graph.facebook.com",
+				"httpRequestMethod": "POST",
+				"graphApiVersion": "v25.0",
+				"node": "={{ $('Settings').first().json.instagramAccountId }}",
+				"edge": "media",
+				"options": {
+					"queryParameters": {
+						"parameter": [
+							{
+								"name": "image_url",
+								"value": "={{ $json.imageUrl }}"
+							},
+							{
+								"name": "caption",
+								"value": "={{ $json.caption }}"
+							}
+						]
+					}
+				}
+			},
+			"id": "3fdb9b1b-5233-4992-97d1-7fcdf42512a7",
+			"name": "Create Instagram post",
+			"type": "n8n-nodes-base.facebookGraphApi",
+			"typeVersion": 1.1,
+			"position": [
+				1980,
+				0
+			],
+			"onError": "continueErrorOutput"
+		},
+		{
+			"parameters": {
+				"amount": 30,
+				"unit": "seconds"
+			},
+			"id": "462eba93-1115-4235-aeca-496c66975f23",
+			"name": "Wait for Instagram",
+			"type": "n8n-nodes-base.wait",
+			"typeVersion": 1.1,
+			"position": [
+				2200,
+				-100
+			],
+			"webhookId": "061b3666-78fe-49ca-91a5-7622c3f370c0"
+		},
+		{
+			"parameters": {
+				"hostUrl": "graph.facebook.com",
+				"httpRequestMethod": "POST",
+				"graphApiVersion": "v25.0",
+				"node": "={{ $('Settings').first().json.instagramAccountId }}",
+				"edge": "media_publish",
+				"options": {
+					"queryParameters": {
+						"parameter": [
+							{
+								"name": "creation_id",
+								"value": "={{ $json.id }}"
+							}
+						]
+					}
+				}
+			},
+			"id": "78f0e6ca-4f31-40ca-b1ac-d332eaa3a898",
+			"name": "Publish to Instagram",
+			"type": "n8n-nodes-base.facebookGraphApi",
+			"typeVersion": 1.1,
+			"position": [
+				2420,
+				-100
+			],
+			"onError": "continueErrorOutput",
+			"retryOnFail": true,
+			"maxTries": 3,
+			"waitBetweenTries": 5000
+		},
+		{
+			"parameters": {
+				"jsCode": "// Remember the story, so a later run never posts it again.\nconst post = $('Choose story to post').first().json;\nconst memory = $getWorkflowStaticData('global');\nmemory.postedKeys = [...(memory.postedKeys ?? []), ...post.keys].slice(-2000);\n\nreturn [\n  {\n    json: {\n      posted: true,\n      instagramMediaId: $json.id,\n      title: post.title,\n      link: post.link,\n      postedAt: new Date().toISOString(),\n    },\n  },\n];"
+			},
+			"id": "b06fb01f-f59c-42a5-9deb-2aee2c97ebe5",
+			"name": "Remember posted story",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				2640,
+				-200
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Instagram rejected this story. Do not try it again on a later day.\nconst post = $('Choose story to post').first().json;\nconst memory = $getWorkflowStaticData('global');\nmemory.skippedKeys = [...(memory.skippedKeys ?? []), ...post.keys].slice(-2000);\n\n// Try the next story, but stop after three failed stories in one run.\nif ($runIndex >= 2) return [];\n\nreturn [{ json: { skipped: post.title, reason: $json.error?.message ?? $json.error ?? 'Instagram error' } }];"
+			},
+			"id": "adad4eff-3967-412a-895b-248e5012e897",
+			"name": "Skip this story",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				2640,
+				200
+			]
+		}
+	],
+	"connections": {
+		"Schedule Trigger": {
+			"main": [
+				[
+					{
+						"node": "Settings",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Settings": {
+			"main": [
+				[
+					{
+						"node": "News sources",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"News sources": {
+			"main": [
+				[
+					{
+						"node": "Read news feeds",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Read news feeds": {
+			"main": [
+				[
+					{
+						"node": "Pick new UFC stories",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Pick new UFC stories": {
+			"main": [
+				[
+					{
+						"node": "Fetch article pages",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Fetch article pages": {
+			"main": [
+				[
+					{
+						"node": "Build Instagram posts",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Build Instagram posts": {
+			"main": [
+				[
+					{
+						"node": "Check images",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Check images": {
+			"main": [
+				[
+					{
+						"node": "Choose story to post",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Choose story to post": {
+			"main": [
+				[
+					{
+						"node": "Create Instagram post",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Create Instagram post": {
+			"main": [
+				[
+					{
+						"node": "Wait for Instagram",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Skip this story",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Wait for Instagram": {
+			"main": [
+				[
+					{
+						"node": "Publish to Instagram",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Publish to Instagram": {
+			"main": [
+				[
+					{
+						"node": "Remember posted story",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Skip this story",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Skip this story": {
+			"main": [
+				[
+					{
+						"node": "Choose story to post",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1",
+		"timezone": "America/New_York"
+	},
+	"pinData": {},
+	"meta": {
+		"templateCredsSetupCompleted": false
+	}
+}

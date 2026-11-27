@@ -1,0 +1,677 @@
+{
+	"name": "UFC news to Downloads",
+	"nodes": [
+		{
+			"parameters": {
+				"content": "## UFC news → Downloads (preview)\n\nBuilds the same UFC post as the Instagram workflow (Ollama caption + logo on the image) and saves files to your Mac. Nothing is posted to Instagram.\n\n### Output (per run)\nFiles save under **Settings → downloadsFolder** (default `~/.n8n-files`, allowed by n8n):\n- `YYYY-MM-DDTHH-MM-SS-story.jpg` — square post image\n- `...-caption.txt` — caption text\n- `...-meta.json` — title, link, paths\n\n### Setup\n1. Install Ollama and pull your model (`ollama pull llama3.2`) — captions use **Settings → ollamaModel**.\n2. Logo watermark: `pnpm dev:up` copies `workflows/assets/fw-logo-black-bg.png` to **~/.n8n-files/** (black background). **logoFilePath** points there.\n3. Captions end with lowercase UFC hashtags from **Settings → hashtags**.\n4. Click **Test workflow** or use the schedule.\n5. To save in **Downloads**: set **downloadsFolder** to `/Users/you/Downloads`, then start n8n with `pnpm dev:up`.\n6. Works on local n8n only (not n8n Cloud).",
+				"height": 520,
+				"width": 420
+			},
+			"id": "4b063f4d-3680-4fb6-95f3-783fba9d324f",
+			"name": "Setup notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [
+				-520,
+				-120
+			]
+		},
+		{
+			"parameters": {},
+			"id": "5d82bba5-1511-48ec-82f9-0e31d6e3ec80",
+			"name": "Manual Trigger",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [
+				-200,
+				160
+			]
+		},
+		{
+			"parameters": {
+				"rule": {
+					"interval": [
+						{
+							"field": "days",
+							"daysInterval": 1,
+							"triggerAtHour": 9,
+							"triggerAtMinute": 0
+						}
+					]
+				}
+			},
+			"id": "23ae5ce4-e7a4-4ac6-8d92-ef75cd9c22f4",
+			"name": "Schedule Trigger",
+			"type": "n8n-nodes-base.scheduleTrigger",
+			"typeVersion": 1.2,
+			"position": [
+				-200,
+				-40
+			]
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "830888a5-2712-48d6-9cab-0cd10f71f2f1",
+							"name": "downloadsFolder",
+							"value": "/Users/figueroaf/.n8n-files",
+							"type": "string"
+						},
+						{
+							"id": "0610a3a4-dffe-477e-bbbc-8bb6ae68173e",
+							"name": "hashtags",
+							"value": "#ufc #mma #ufcnews #mixedmartialarts #fightnews",
+							"type": "string"
+						},
+						{
+							"id": "b473ebc9-54d9-4a92-9a14-73139fa9f942",
+							"name": "maxStoryAgeHours",
+							"value": 48,
+							"type": "number"
+						},
+						{
+							"id": "b7917b89-1416-495b-8f83-5ddb5cb12d38",
+							"name": "ollamaBaseUrl",
+							"value": "http://127.0.0.1:11434",
+							"type": "string"
+						},
+						{
+							"id": "da57c878-d634-4fc4-b3d1-492ee6315b21",
+							"name": "ollamaModel",
+							"value": "llama3.2",
+							"type": "string"
+						},
+						{
+							"id": "0b86b68a-bbe2-4e2f-b17d-490abeef0d50",
+							"name": "logoFilePath",
+							"value": "/Users/figueroaf/.n8n-files/fw-logo-black-bg.png",
+							"type": "string"
+						},
+						{
+							"id": "b27a7977-dabf-4924-b830-4213f29eb421",
+							"name": "logoMarkScale",
+							"value": 14,
+							"type": "number"
+						},
+						{
+							"id": "f43e9bf7-3e16-41e6-a63d-4a4991fd400e",
+							"name": "logoMarkPad",
+							"value": 22,
+							"type": "number"
+						}
+					]
+				},
+				"options": {}
+			},
+			"id": "3b5c80e9-d3fe-405c-8acb-e5325bed0b56",
+			"name": "Settings",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [
+				20,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Add or remove news sources here. Set allUfc to true for a feed that only publishes UFC news.\n// A source works only if its article images can be downloaded by other servers.\nconst feeds = [\n  { name: 'UFC.com', url: 'https://www.ufc.com/rss/news', allUfc: true },\n  { name: 'MMA Fighting', url: 'https://www.mmafighting.com/rss/index.xml' },\n  { name: 'Sherdog', url: 'https://www.sherdog.com/rss/news.xml' },\n  { name: 'MMA News', url: 'https://www.mmanews.com/feed' },\n];\n\nreturn feeds.map((feed) => ({ json: feed }));"
+			},
+			"id": "5a798bd4-4d86-4315-bd56-7080b76ba871",
+			"name": "News sources",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				440,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"url": "={{ $json.url }}",
+				"options": {
+					"customFields": "media:content, media:thumbnail"
+				}
+			},
+			"id": "44519bc1-6a20-4bfa-85ce-d5fb6af669b6",
+			"name": "Read news feeds",
+			"type": "n8n-nodes-base.rssFeedRead",
+			"typeVersion": 1.2,
+			"position": [
+				660,
+				0
+			],
+			"onError": "continueRegularOutput"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Pick the newest UFC stories that this workflow has not posted or skipped yet.\nconst settings = $('Settings').first().json;\nconst feeds = $('News sources').all().map((item) => item.json);\nconst memory = $getWorkflowStaticData('global');\nconst seen = new Set([...(memory.postedKeys ?? []), ...(memory.skippedKeys ?? [])]);\n\nconst maxAgeMs = Number(settings.maxStoryAgeHours || 48) * 60 * 60 * 1000;\nconst candidateCount = 10;\n\nconst host = (url) => {\n  try {\n    return new URL(url).hostname.replace(/^www\\./, '').toLowerCase();\n  } catch {\n    return '';\n  }\n};\n\nconst linkKey = (url) => {\n  try {\n    const parsed = new URL(url);\n    return `link:${parsed.hostname.replace(/^www\\./, '')}${parsed.pathname.replace(/\\/+$/, '')}`.toLowerCase();\n  } catch {\n    return `link:${String(url).toLowerCase()}`;\n  }\n};\n\nconst titleKey = (title) =>\n  `title:${String(title).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()}`;\n\nconst firstUrl = (value) => {\n  if (!value) return '';\n  if (typeof value === 'string') return value;\n  if (Array.isArray(value)) return firstUrl(value[0]);\n  return value.url || value.$?.url || value.href || '';\n};\n\nconst looksLikeImage = (url) => /\\.(jpe?g|png|webp|gif|avif)(\\?|$)/i.test(url);\n\nconst decodeUrl = (url) => String(url).replace(/&#0?38;|&amp;/g, '&');\n\nfunction feedImage(item) {\n  const enclosure = item.enclosure;\n  if (enclosure?.url && (/^image\\//.test(enclosure.type || '') || looksLikeImage(enclosure.url))) {\n    return decodeUrl(enclosure.url);\n  }\n  const media = firstUrl(item['media:content']) || firstUrl(item['media:thumbnail']);\n  if (media) return decodeUrl(media);\n  const html = `${item['content:encoded'] || ''} ${item.content || ''}`;\n  const img = html.match(/<img[^>]+src=[\"']([^\"']+)[\"']/i);\n  return img ? decodeUrl(img[1]) : '';\n}\n\nconst feedForLink = (link) => {\n  const linkHost = host(link);\n  return feeds.find((feed) => {\n    const feedHost = host(feed.url);\n    return linkHost === feedHost || linkHost.endsWith(`.${feedHost}`) || feedHost.endsWith(`.${linkHost}`);\n  });\n};\n\nconst now = Date.now();\nconst stories = [];\nconst keysInThisRun = new Set();\n\nfor (const { json: item } of $('Read news feeds').all()) {\n  if (item.error || !item.title || !item.link) continue;\n\n  const published = new Date(item.isoDate || item.pubDate || 0).getTime();\n  if (!published || now - published > maxAgeMs || published > now + 60 * 60 * 1000) continue;\n\n  const feed = feedForLink(item.link);\n  const categories = Array.isArray(item.categories) ? item.categories.join(' ') : '';\n  const text = `${item.title} ${categories} ${item.link}`;\n  if (!feed?.allUfc && !/(^|[^a-z])ufc([^a-z]|$)/i.test(text)) continue;\n\n  const keys = [linkKey(item.link), titleKey(item.title)];\n  if (keys.some((key) => seen.has(key) || keysInThisRun.has(key))) continue;\n  keys.forEach((key) => keysInThisRun.add(key));\n\n  stories.push({\n    title: String(item.title).trim(),\n    link: item.link,\n    source: feed?.name || host(item.link),\n    publishedAt: new Date(published).toISOString(),\n    snippet: String(item.contentSnippet || '').slice(0, 1500),\n    feedImage: feedImage(item),\n    keys,\n  });\n}\n\nstories.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));\n\nreturn stories.slice(0, candidateCount).map((story) => ({ json: story }));"
+			},
+			"id": "d34dcd4d-3dd1-40fb-828a-882e9b1e35ce",
+			"name": "Pick new UFC stories",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				880,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"url": "={{ $json.link }}",
+				"sendHeaders": true,
+				"headerParameters": {
+					"parameters": [
+						{
+							"name": "User-Agent",
+							"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
+						}
+					]
+				},
+				"options": {
+					"response": {
+						"response": {
+							"neverError": true,
+							"responseFormat": "text"
+						}
+					},
+					"timeout": 15000
+				}
+			},
+			"id": "62e55fb8-1b30-4de3-a5de-20eee04ee197",
+			"name": "Fetch article pages",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
+			"position": [
+				1100,
+				0
+			],
+			"onError": "continueRegularOutput"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Build Instagram posts with Ollama captions and a bottom-right logo watermark.\nconst settings = $('Settings').first().json;\nconst stories = $('Pick new UFC stories').all();\nconst pages = $input.all();\n\nconst decode = (text) =>\n\tString(text)\n\t\t.replace(/&amp;|&#0?38;/g, '&')\n\t\t.replace(/&quot;/g, '\"')\n\t\t.replace(/&#0?39;|&apos;/g, \"'\")\n\t\t.replace(/&#8217;/g, '’')\n\t\t.replace(/&#8216;/g, '‘')\n\t\t.replace(/&#8220;/g, '“')\n\t\t.replace(/&#8221;/g, '”')\n\t\t.replace(/&#8230;/g, '…')\n\t\t.replace(/&nbsp;/g, ' ')\n\t\t.replace(/&lt;/g, '<')\n\t\t.replace(/&gt;/g, '>');\n\nfunction metaContent(html, names) {\n\tif (typeof html !== 'string') return '';\n\tfor (const tag of html.match(/<meta\\b[^>]*>/gi) || []) {\n\t\tconst name = tag.match(/(?:property|name)\\s*=\\s*[\"']([^\"']+)[\"']/i)?.[1]?.toLowerCase();\n\t\tif (!names.includes(name)) continue;\n\t\tconst content = tag.match(/content\\s*=\\s*\"([^\"]*)\"|content\\s*=\\s*'([^']*)'/i);\n\t\tconst value = content?.[1] ?? content?.[2];\n\t\tif (value) return decode(value).trim();\n\t}\n\treturn '';\n}\n\nfunction pageImage(html) {\n\tconst url = metaContent(html, ['og:image', 'og:image:secure_url', 'twitter:image', 'twitter:image:src']);\n\treturn /^https?:\\/\\//i.test(url) ? url : '';\n}\n\nconst pageSummary = (html) => metaContent(html, ['og:description', 'description', 'twitter:description']);\n\nfunction cleanSnippet(text) {\n\treturn decode(text)\n\t\t.replace(/The post .* appeared first on .*$/is, '')\n\t\t.replace(/Read the Full Article Here/gi, '')\n\t\t.replace(/\\s*\\[(?:…|\\.\\.\\.)\\]\\s*$/, '…')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim();\n}\n\nfunction shorten(text, max) {\n\tif (text.length <= max) return text;\n\tconst cut = text.slice(0, max);\n\treturn `${cut.slice(0, Math.max(cut.lastIndexOf(' '), max - 20)).trim()}…`;\n}\n\nfunction fallbackCaption(story, html) {\n\tconst title = decode(story.title);\n\tconst snippet = shorten(cleanSnippet(pageSummary(html) || story.snippet), 500);\n\treturn snippet && snippet !== title ? `${title}\\n\\n${snippet}` : title;\n}\n\nfunction instagramImage(source) {\n\tlet url = `https://images.weserv.nl/?url=${encodeURIComponent(source)}&w=1080&h=1080&fit=contain&cbg=000000&output=jpg&q=90`;\n\tconst localLogo = String(settings.logoFilePath || '').trim();\n\tif (localLogo) return url;\n\tconst logo = String(settings.logoPublicUrl || '').trim();\n\tif (!logo || logo.includes('PASTE_PUBLIC')) return url;\n\tconst scale = Number(settings.logoMarkScale || 14);\n\tconst pad = Number(settings.logoMarkPad || 22);\n\treturn `${url}&mark=${encodeURIComponent(logo)}&markpos=bottom-right&markpad=${pad}&markscale=${scale}`;\n}\n\nasync function ollamaCaption(story, html) {\n\tconst base = String(settings.ollamaBaseUrl || 'http://127.0.0.1:11434').replace(/\\/$/, '');\n\tconst model = String(settings.ollamaModel || 'llama3.2');\n\tconst summary = shorten(cleanSnippet(pageSummary(html) || story.snippet), 700);\n\tconst prompt = `Write an Instagram caption for a UFC news post.\n\nHeadline: ${decode(story.title)}\nSummary: ${summary}\nSource: ${story.source}\n\nRules:\n- Two short paragraphs, under 120 words total.\n- Energetic fight-fan voice.\n- Use only facts from the headline and summary.\n- No hashtags, no emojis, no bullet lists.\n- Do not mention Instagram.`;\n\n\ttry {\n\t\tconst res = await fetch(`${base}/api/generate`, {\n\t\t\tmethod: 'POST',\n\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\tbody: JSON.stringify({\n\t\t\t\tmodel,\n\t\t\t\tprompt,\n\t\t\t\tstream: false,\n\t\t\t\toptions: { temperature: 0.65, num_predict: 240 },\n\t\t\t}),\n\t\t\tsignal: AbortSignal.timeout(90000),\n\t\t});\n\t\tif (!res.ok) throw new Error(`ollama ${res.status}`);\n\t\tconst data = await res.json();\n\t\tconst text = String(data.response || '').trim();\n\t\treturn text || fallbackCaption(story, html);\n\t} catch {\n\t\treturn fallbackCaption(story, html);\n\t}\n}\n\nreturn (async () => {\n\tconst posts = [];\n\tfor (let i = 0; i < stories.length; i++) {\n\t\tconst story = stories[i].json;\n\t\tconst html = pages[i]?.json?.data;\n\t\tconst sourceImage = pageImage(html) || story.feedImage;\n\t\tif (!sourceImage) continue;\n\n\t\tconst body = await ollamaCaption(story, html);\n\t\tconst tags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t\t\t.toLowerCase()\n\t\t\t.trim();\n\t\tconst footer = [`Source: ${story.source}`, `Full story: ${story.link}`, '', tags].join('\\n').trim();\n\t\tconst caption = shorten(body, 2200 - footer.length - 4) + `\\n\\n${footer}`;\n\n\t\tposts.push({\n\t\t\tjson: {\n\t\t\t\t...story,\n\t\t\t\tsourceImage,\n\t\t\t\timageUrl: instagramImage(sourceImage),\n\t\t\t\tcaption,\n\t\t\t},\n\t\t});\n\t}\n\treturn posts;\n})();"
+			},
+			"id": "9af08bda-1c0b-4492-897f-0bf6599c2db9",
+			"name": "Build Instagram posts",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				1320,
+				0
+			]
+		},
+		{
+			"parameters": {
+				"method": "HEAD",
+				"url": "={{ $json.imageUrl }}",
+				"options": {
+					"response": {
+						"response": {
+							"fullResponse": true,
+							"neverError": true,
+							"responseFormat": "text"
+						}
+					},
+					"timeout": 30000
+				}
+			},
+			"id": "69d36c4a-8527-43d1-80ac-fd6f393e5c6d",
+			"name": "Check images",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
+			"position": [
+				1540,
+				0
+			],
+			"onError": "continueRegularOutput"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Pick the newest story whose image is a valid JPEG.\nconst posts = $('Build Instagram posts').all();\nconst checks = $('Check images').all();\n\nconst working = posts.filter((post, i) => {\n\tconst check = checks[i]?.json ?? {};\n\tconst type = String(check.headers?.['content-type'] ?? '');\n\treturn check.statusCode === 200 && type.startsWith('image/jpeg');\n});\n\nconst post = working[0];\nreturn post ? [{ json: post.json }] : [];"
+			},
+			"id": "5c19ac44-b26a-41e7-a84f-a8c425fc55e6",
+			"name": "Choose story to export",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				1760,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Build local file paths under the Downloads folder.\nconst post = $json;\nconst settings = $('Settings').first().json;\nlet folder = String(settings.downloadsFolder || '').trim();\nif (!folder) folder = '/Users/figueroaf/.n8n-files';\nif (folder.startsWith('~/')) {\n  throw new Error(\n    'Set a full path in Settings → downloadsFolder (example: /Users/you/Downloads). Tilde (~) is not supported.',\n  );\n}\nfolder = folder.replace(/\\/$/, '');\n\nconst slug = String(post.title || 'ufc-story')\n\t.toLowerCase()\n\t.normalize('NFKD')\n\t.replace(/[\\u0300-\\u036f]/g, '')\n\t.replace(/[^a-z0-9]+/g, '-')\n\t.replace(/^-+|-+$/g, '')\n\t.slice(0, 48) || 'ufc-story';\n\nconst stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);\nconst base = `${folder}/ufc-${stamp}-${slug}`;\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\t...post,\n\t\t\tdownloadsFolder: folder,\n\t\t\tfileBase: base,\n\t\t\timagePath: `${base}.jpg`,\n\t\t\tcaptionPath: `${base}-caption.txt`,\n\t\t\tmetaPath: `${base}-meta.json`,\n\t\t},\n\t},\n];"
+			},
+			"id": "2c8ae5f3-dafd-471f-ad35-6a148b3b5c81",
+			"name": "Prepare export paths",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				1980,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"url": "={{ $json.imageUrl }}",
+				"options": {
+					"response": {
+						"response": {
+							"responseFormat": "file",
+							"outputPropertyName": "data"
+						}
+					},
+					"timeout": 60000
+				}
+			},
+			"id": "1c71cb4e-2a16-4cd4-814a-b0bd957a2205",
+			"name": "Download post image",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
+			"position": [
+				2200,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Keep export paths on the item and fail fast when the JPEG did not download.\nconst prep = $('Prepare export paths').first().json;\nconst item = $input.first();\n\nif (!item.binary?.data) {\n\tthrow new Error(\n\t\t`Image download failed for \"${prep.title}\". Check imageUrl in the previous node output.`,\n\t);\n}\n\nreturn [{ json: { ...prep }, binary: item.binary }];"
+			},
+			"id": "a8d85a5d-526b-4032-82da-a391765c6323",
+			"name": "Ensure image downloaded",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				2310,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"operation": "read",
+				"fileSelector": "={{ $('Settings').first().json.logoFilePath }}",
+				"options": {
+					"dataPropertyName": "logo"
+				}
+			},
+			"id": "43c2277a-b061-42c3-82be-1211f62ae277",
+			"name": "Read logo asset",
+			"type": "n8n-nodes-base.readWriteFile",
+			"typeVersion": 1.1,
+			"position": [
+				2420,
+				-60
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Merge the post JPEG with the logo file read from workflows/assets.\nconst post = $('Ensure image downloaded').first();\nconst logo = $input.first().binary?.logo;\nif (!logo) {\n\tthrow new Error(\n\t\t'Logo file missing. Run pnpm dev:up (copies the logo to ~/.n8n-files) or set Settings → logoFilePath.',\n\t);\n}\nreturn [\n\t{\n\t\tjson: post.json,\n\t\tbinary: {\n\t\t\tdata: post.binary.data,\n\t\t\tlogo,\n\t\t},\n\t},\n];"
+			},
+			"id": "3ef8ffa0-7a18-4485-8441-d9ba9cc67277",
+			"name": "Attach logo binary",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				2530,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"operation": "resize",
+				"dataPropertyName": "logo",
+				"width": "={{ Math.round(1080 * $('Settings').first().json.logoMarkScale / 100) }}",
+				"height": "={{ Math.round(1080 * $('Settings').first().json.logoMarkScale / 100) }}",
+				"resizeOption": "ignoreAspectRatio",
+				"options": {
+					"destinationKey": "logo"
+				}
+			},
+			"id": "96bce165-f35b-4cb9-b092-f99f34bcd0c0",
+			"name": "Resize logo",
+			"type": "n8n-nodes-base.editImage",
+			"typeVersion": 2,
+			"position": [
+				2750,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"operation": "composite",
+				"dataPropertyName": "data",
+				"dataPropertyNameComposite": "logo",
+				"operator": "Over",
+				"positionX": "={{ Math.round(1080 - 1080 * $(\"Settings\").first().json.logoMarkScale / 100 - $(\"Settings\").first().json.logoMarkPad) }}",
+				"positionY": "={{ Math.round(1080 - 1080 * $(\"Settings\").first().json.logoMarkScale / 100 - $(\"Settings\").first().json.logoMarkPad) }}",
+				"options": {}
+			},
+			"id": "e392a433-7856-4e42-ba13-e122b6317658",
+			"name": "Apply logo watermark",
+			"type": "n8n-nodes-base.editImage",
+			"typeVersion": 2,
+			"position": [
+				2970,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"operation": "write",
+				"fileName": "={{ $json.imagePath }}",
+				"dataPropertyName": "data",
+				"options": {}
+			},
+			"id": "3bb1fc70-c475-4b9e-b1f8-fd8f526c45af",
+			"name": "Write post image",
+			"type": "n8n-nodes-base.readWriteFile",
+			"typeVersion": 1.1,
+			"position": [
+				3190,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Build caption + meta binaries while keeping export paths on json (Convert to File clears json).\nconst post = $json;\nconst caption = String(post.caption ?? '').trim() || '(No caption generated — check Ollama.)';\n\nconst payload = {\n\ttitle: post.title,\n\tlink: post.link,\n\tsource: post.source,\n\tpublishedAt: post.publishedAt,\n\timageUrl: post.imageUrl,\n\tsourceImage: post.sourceImage,\n\tcaption,\n\tsavedImage: post.imagePath,\n\tsavedCaption: post.captionPath,\n\texportedAt: new Date().toISOString(),\n};\nconst metaText = JSON.stringify(payload, null, 2);\n\nconst baseName = String(post.fileBase ?? 'ufc-export').split('/').pop();\n\nconst toBinary = (text, mimeType, fileName) => ({\n\tdata: Buffer.from(text, 'utf8').toString('base64'),\n\tmimeType,\n\tfileName,\n});\n\nreturn [\n\t{\n\t\tjson: { ...post, caption, metaText },\n\t\tbinary: {\n\t\t\tcaptionFile: toBinary(caption, 'text/plain', `${baseName}-caption.txt`),\n\t\t\tmetaFile: toBinary(metaText, 'application/json', `${baseName}-meta.json`),\n\t\t},\n\t},\n];"
+			},
+			"id": "0e0418d0-5151-41da-90ce-3c210664705e",
+			"name": "Finalize export",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				3410,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"operation": "write",
+				"fileName": "={{ $json.captionPath }}",
+				"dataPropertyName": "captionFile",
+				"options": {}
+			},
+			"id": "c0f9833f-61a5-4e3b-ad79-9a23dfef0439",
+			"name": "Write caption file",
+			"type": "n8n-nodes-base.readWriteFile",
+			"typeVersion": 1.1,
+			"position": [
+				3630,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"operation": "write",
+				"fileName": "={{ $json.metaPath }}",
+				"dataPropertyName": "metaFile",
+				"options": {}
+			},
+			"id": "5723d0a7-60da-4ec8-b018-dfd7ebab0ac5",
+			"name": "Write meta file",
+			"type": "n8n-nodes-base.readWriteFile",
+			"typeVersion": 1.1,
+			"position": [
+				3850,
+				60
+			]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Remember the story so the next run picks a different one.\nconst post = $('Prepare export paths').first().json;\nconst memory = $getWorkflowStaticData('global');\nmemory.postedKeys = [...(memory.postedKeys ?? []), ...post.keys].slice(-2000);\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\texported: true,\n\t\t\timagePath: post.imagePath,\n\t\t\tcaptionPath: post.captionPath,\n\t\t\tmetaPath: post.metaPath,\n\t\t\ttitle: post.title,\n\t\t\tlink: post.link,\n\t\t\texportedAt: new Date().toISOString(),\n\t\t},\n\t},\n];"
+			},
+			"id": "18fd221c-a0b6-440b-acac-47cd93b3e410",
+			"name": "Remember exported story",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [
+				4070,
+				60
+			]
+		}
+	],
+	"connections": {
+		"Manual Trigger": {
+			"main": [
+				[
+					{
+						"node": "Settings",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Schedule Trigger": {
+			"main": [
+				[
+					{
+						"node": "Settings",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Settings": {
+			"main": [
+				[
+					{
+						"node": "News sources",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"News sources": {
+			"main": [
+				[
+					{
+						"node": "Read news feeds",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Read news feeds": {
+			"main": [
+				[
+					{
+						"node": "Pick new UFC stories",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Pick new UFC stories": {
+			"main": [
+				[
+					{
+						"node": "Fetch article pages",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Fetch article pages": {
+			"main": [
+				[
+					{
+						"node": "Build Instagram posts",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Build Instagram posts": {
+			"main": [
+				[
+					{
+						"node": "Check images",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Check images": {
+			"main": [
+				[
+					{
+						"node": "Choose story to export",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Choose story to export": {
+			"main": [
+				[
+					{
+						"node": "Prepare export paths",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Prepare export paths": {
+			"main": [
+				[
+					{
+						"node": "Download post image",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Download post image": {
+			"main": [
+				[
+					{
+						"node": "Ensure image downloaded",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Ensure image downloaded": {
+			"main": [
+				[
+					{
+						"node": "Read logo asset",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Read logo asset": {
+			"main": [
+				[
+					{
+						"node": "Attach logo binary",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Attach logo binary": {
+			"main": [
+				[
+					{
+						"node": "Resize logo",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Resize logo": {
+			"main": [
+				[
+					{
+						"node": "Apply logo watermark",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Apply logo watermark": {
+			"main": [
+				[
+					{
+						"node": "Write post image",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Write post image": {
+			"main": [
+				[
+					{
+						"node": "Finalize export",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Finalize export": {
+			"main": [
+				[
+					{
+						"node": "Write caption file",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Write caption file": {
+			"main": [
+				[
+					{
+						"node": "Write meta file",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Write meta file": {
+			"main": [
+				[
+					{
+						"node": "Remember exported story",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1",
+		"timezone": "America/New_York"
+	},
+	"pinData": {},
+	"meta": {
+		"templateCredsSetupCompleted": true
+	}
+}
