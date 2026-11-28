@@ -1,5 +1,5 @@
 // Turn each picked story into a post draft: clean article facts, image links, and a backup caption.
-// The AI caption is written later, for the one story that gets exported.
+// The AI caption is written later for each story that gets exported.
 const settings = $('Settings').first().json;
 const stories = $('Pick new UFC stories').all();
 const pages = $input.all();
@@ -174,7 +174,10 @@ const width = Math.round(Number(settings.imageWidth) || 1080);
 const height = Math.round(Number(settings.imageHeight) || 1920);
 const tags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')
 	.toLowerCase()
-	.trim();
+	.split(/\s+/)
+	.filter(Boolean)
+	.slice(0, 5)
+	.join(' ');
 
 const posts = [];
 for (let i = 0; i < stories.length; i++) {

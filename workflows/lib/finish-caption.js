@@ -1,7 +1,12 @@
 // Clean the Ollama answer and assemble the caption. Use the backup caption when Ollama gave nothing usable.
 const settings = $('Settings').first().json;
-const { ollamaRequest, ...post } = $('Build caption prompt').first().json;
-const reply = $input.first().json ?? {};
+const { ollamaRequest, ...post } = $('Build caption prompt').item.json;
+const reply = $input.item.json ?? {};
+
+const headline = String(post.captionHeadline ?? post.title ?? '').trim();
+const articleText = String(post.captionFacts ?? post.storyFacts ?? '').trim();
+const outlet = String(post.captionOutlet ?? post.source ?? 'UFC News').trim();
+const storyLink = String(post.captionLink ?? post.link ?? '').trim();
 
 const tidy = (value) =>
 	String(value ?? '')
@@ -23,7 +28,7 @@ const plain = (text) =>
 
 // A small local model sometimes adds claims that the article does not make. Keep a sentence only
 // when most of its words, and all of its numbers and names, come from the article.
-const article = plain(`${post.title} ${post.storyFacts ?? ''}`);
+const article = plain(`${headline} ${articleText}`);
 const COMMON_WORDS = new Set(
 	`about after again also always been before being both could does doing down each even ever every
 	fans from have having here into just know like make many more most much must need next only other
@@ -73,7 +78,7 @@ function readAnswer() {
 		question.endsWith('?') && question.length >= 15 && question.length <= 180 && fromArticle(question, 0.4);
 
 	return {
-		hook: hookFits ? hook.replace(/([^.!?])$/, '$1.') : post.title,
+		hook: hookFits ? hook.replace(/([^.!?])$/, '$1.') : headline,
 		body,
 		question: questionFits ? question : '',
 		fighters: Array.isArray(answer.fighters) ? answer.fighters : [],
@@ -83,7 +88,7 @@ function readAnswer() {
 // Keep a name tag only when the article really names that person. Names in the headline come
 // first. When the headline has no name, one name from the article is enough.
 function nameTags(fighters) {
-	const headline = plain(post.title);
+	const headlinePlain = plain(headline);
 	const inHeadline = [];
 	const inArticle = [];
 	for (const fighter of fighters) {
@@ -91,7 +96,7 @@ function nameTags(fighters) {
 		const words = name.split(' ');
 		if (words.length < 2 || words.length > 4 || !article.includes(plain(name))) continue;
 		const tag = `#${plain(name).replace(/[^a-z0-9]/g, '')}`;
-		const list = headline.includes(plain(name)) ? inHeadline : inArticle;
+		const list = headlinePlain.includes(plain(name)) ? inHeadline : inArticle;
 		if (tag.length > 3 && !list.includes(tag)) list.push(tag);
 	}
 	return inHeadline.length > 0 ? inHeadline.slice(0, 3) : inArticle.slice(0, 1);
@@ -99,9 +104,9 @@ function nameTags(fighters) {
 
 function eventTags() {
 	const tags = [];
-	const numbered = post.title.match(/\bUFC\s?(\d{3})\b/i);
+	const numbered = headline.match(/\bUFC\s?(\d{3})\b/i);
 	if (numbered) tags.push(`#ufc${numbered[1]}`);
-	if (/\bUFC Fight Night\b/i.test(post.title)) tags.push('#ufcfightnight');
+	if (/\bUFC Fight Night\b/i.test(headline)) tags.push('#ufcfightnight');
 	return tags;
 }
 
@@ -119,29 +124,29 @@ try {
 	extraTags = [...nameTags(answer.fighters), ...extraTags];
 } catch (error) {
 	// The export continues with the backup text. data.json records why.
-	parts = [post.captionBody || post.title, OPEN_QUESTION];
+	parts = [post.captionBody || headline, OPEN_QUESTION];
 	captionSource = 'backup';
 	captionError = error.message;
 }
 
+// Instagram allows at most five hashtags per post.
+const MAX_HASHTAGS = 5;
 const baseTags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')
 	.toLowerCase()
 	.split(/\s+/)
 	.filter(Boolean);
-const hashtags = [...new Set([...baseTags, ...extraTags])].slice(0, 30).join(' ');
+const hashtags = [...new Set([...baseTags, ...extraTags])].slice(0, MAX_HASHTAGS).join(' ');
 
-const credit = [`Source: ${post.source}`];
-if (settings.includeLinkInCaption) credit.push(`Full story: ${post.link}`);
+const credit = [`Source: ${outlet}`];
+if (settings.includeLinkInCaption && storyLink) credit.push(`Full story: ${storyLink}`);
 
 const caption = [...parts, credit.join('\n'), hashtags].join('\n\n');
 
-return [
-	{
-		json: {
-			...post,
-			caption,
-			captionSource,
-			...(captionError ? { captionError } : {}),
-		},
+return {
+	json: {
+		...post,
+		caption,
+		captionSource,
+		...(captionError ? { captionError } : {}),
 	},
-];
+};

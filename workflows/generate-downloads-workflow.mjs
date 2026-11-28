@@ -12,7 +12,9 @@ const defaultLogoPath = join(workflowsDir, 'assets/fw-logo-black-bg.png');
 const defaultLogoHome = join(homedir(), '.n8n-files/fw-logo-black-bg.png');
 
 const readCode = (name) => readFileSync(new URL(`./lib/${name}`, import.meta.url), 'utf8');
-const ig = JSON.parse(readFileSync(new URL('./ufc-news-to-instagram.json', import.meta.url), 'utf8'));
+const downloadsTemplate = JSON.parse(
+	readFileSync(new URL('./ufc-news-to-downloads.json', import.meta.url), 'utf8'),
+);
 
 const sharedNames = new Set([
 	'News sources',
@@ -22,7 +24,7 @@ const sharedNames = new Set([
 	'Build Instagram posts',
 	'Check images',
 ]);
-const shared = ig.nodes.filter((n) => sharedNames.has(n.name));
+const shared = downloadsTemplate.nodes.filter((n) => sharedNames.has(n.name));
 
 const node = (name, type, typeVersion, position, parameters, extra = {}) => ({
 	parameters,
@@ -39,10 +41,10 @@ const BROWSER_UA =
 
 const setupNote = `## UFC news → Downloads (preview)
 
-Builds one UFC post per run and saves it to your Mac. Nothing is posted to Instagram.
+Builds up to **exportsPerRun** UFC posts per run (default **5**) and saves them to your Mac. Nothing is posted to Instagram.
 
 ### Output (per run)
-Each post gets its own folder under **Settings → downloadsFolder** (default \`~/.n8n-files\`):
+Each story gets its own folder under **Settings → downloadsFolder** (default \`~/.n8n-files\`):
 - \`<random-id>/cover.jpg\` — 1080×1920 story image (9:16)
 - \`<random-id>/note.txt\` — caption
 - \`<random-id>/data.json\` — title, link, paths, and \`captionSource\`
@@ -53,7 +55,7 @@ Blurred backdrop, the full photo, the headline, your logo, and the outlet name. 
 - Look: **postLabel**, **accentColor**, **headlineFont**, **detailFont**, **logoMarkScale**. The fonts are macOS font files.
 
 ### Caption
-Ollama writes a hook, 2 to 3 sentences, and a question for the chosen story. Hashtags come from **hashtags** plus the fighters in the story.
+Ollama writes a hook, 2 to 3 sentences, and a question for each story. Captions use at most **5 hashtags** (from **hashtags**, then event or fighter tags if there is room).
 - \`captionSource\` in data.json is \`ollama\` or \`backup\`. \`backup\` means Ollama did not answer; \`captionError\` says why.
 - Set **includeLinkInCaption** to true to add the article link.
 
@@ -165,6 +167,7 @@ const nodes = [
 					type: 'string',
 				},
 				{ id: randomUUID(), name: 'logoMarkScale', value: 12, type: 'number' },
+				{ id: randomUUID(), name: 'exportsPerRun', value: 5, type: 'number' },
 			],
 		},
 		options: {},
@@ -209,7 +212,7 @@ const nodes = [
 		},
 	}),
 	node('Download photo', 'n8n-nodes-base.httpRequest', 4.2, [3080, 60], {
-		url: expr("$('Finish caption').first().json.photoUrl"),
+		url: expr('$json.photoUrl'),
 		options: {
 			response: { response: { responseFormat: 'file', outputPropertyName: 'photo' } },
 			timeout: 60000,
@@ -365,9 +368,26 @@ for (const [name, file] of [
 	['News sources', 'news-sources.js'],
 	['Pick new UFC stories', 'pick-new-ufc-stories.js'],
 	['Build Instagram posts', 'build-instagram-posts.js'],
+	['Choose story to export', 'choose-story-to-export.js'],
+	['Finish caption', 'finish-caption.js'],
+	['Plan story layout', 'plan-story-layout.js'],
+	['Remember exported story', 'remember-exported-story.js'],
+	['Load logo', 'load-logo-with-fallback.js'],
 ]) {
 	const node = nodes.find((n) => n.name === name);
 	if (node) node.parameters.jsCode = readCode(file);
+}
+
+// These Code nodes handle one story. The default mode runs once for all items and returns only one.
+for (const name of [
+	'Prepare export paths',
+	'Build caption prompt',
+	'Finish caption',
+	'Plan story layout',
+	'Finalize export',
+	'Remember exported story',
+]) {
+	nodes.find((n) => n.name === name).parameters.mode = 'runOnceForEachItem';
 }
 
 const workflow = {

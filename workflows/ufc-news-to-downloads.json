@@ -3,11 +3,11 @@
 	"nodes": [
 		{
 			"parameters": {
-				"content": "## UFC news → Downloads (preview)\n\nBuilds one UFC post per run and saves it to your Mac. Nothing is posted to Instagram.\n\n### Output (per run)\nEach post gets its own folder under **Settings → downloadsFolder** (default `~/.n8n-files`):\n- `<random-id>/cover.jpg` — 1080×1920 story image (9:16)\n- `<random-id>/note.txt` — caption\n- `<random-id>/data.json` — title, link, paths, and `captionSource`\n\n### Image\nBlurred backdrop, the full photo, the headline, your logo, and the outlet name. Important parts stay clear of the top and bottom of the screen.\n- Size: **imageWidth** × **imageHeight** (use 1080 × 1350 for a 4:5 feed post).\n- Look: **postLabel**, **accentColor**, **headlineFont**, **detailFont**, **logoMarkScale**. The fonts are macOS font files.\n\n### Caption\nOllama writes a hook, 2 to 3 sentences, and a question for the chosen story. Hashtags come from **hashtags** plus the fighters in the story.\n- `captionSource` in data.json is `ollama` or `backup`. `backup` means Ollama did not answer; `captionError` says why.\n- Set **includeLinkInCaption** to true to add the article link.\n\n### Setup\n1. Start Ollama (`ollama serve`) and pull the model in **ollamaModel** (`ollama pull llama3.2`).\n2. Logo: `workflows/assets/fw-logo-black-bg.png`. Backup copy in **~/.n8n-files/** after `pnpm dev:up`.\n3. Click **Test workflow** or use the schedule.\n4. To save in **Downloads**: set **downloadsFolder** to `/Users/you/Downloads`, then start n8n with `pnpm dev:up`.\n5. Works on local n8n only (not n8n Cloud).",
+				"content": "## UFC news → Downloads (preview)\n\nBuilds up to **exportsPerRun** UFC posts per run (default **5**) and saves them to your Mac. Nothing is posted to Instagram.\n\n### Output (per run)\nEach story gets its own folder under **Settings → downloadsFolder** (default `~/.n8n-files`):\n- `<random-id>/cover.jpg` — 1080×1920 story image (9:16)\n- `<random-id>/note.txt` — caption\n- `<random-id>/data.json` — title, link, paths, and `captionSource`\n\n### Image\nBlurred backdrop, the full photo, the headline, your logo, and the outlet name. Important parts stay clear of the top and bottom of the screen.\n- Size: **imageWidth** × **imageHeight** (use 1080 × 1350 for a 4:5 feed post).\n- Look: **postLabel**, **accentColor**, **headlineFont**, **detailFont**, **logoMarkScale**. The fonts are macOS font files.\n\n### Caption\nOllama writes a hook, 2 to 3 sentences, and a question for each story. Captions use at most **5 hashtags** (from **hashtags**, then event or fighter tags if there is room).\n- `captionSource` in data.json is `ollama` or `backup`. `backup` means Ollama did not answer; `captionError` says why.\n- Set **includeLinkInCaption** to true to add the article link.\n\n### Setup\n1. Start Ollama (`ollama serve`) and pull the model in **ollamaModel** (`ollama pull llama3.2`).\n2. Logo: `workflows/assets/fw-logo-black-bg.png`. Backup copy in **~/.n8n-files/** after `pnpm dev:up`.\n3. Click **Test workflow** or use the schedule.\n4. To save in **Downloads**: set **downloadsFolder** to `/Users/you/Downloads`, then start n8n with `pnpm dev:up`.\n5. Works on local n8n only (not n8n Cloud).",
 				"height": 760,
 				"width": 460
 			},
-			"id": "16f79d71-08f5-4ae3-aa3f-66780aefd047",
+			"id": "f3fdfe66-26e5-4476-9385-ebc722768444",
 			"name": "Setup notes",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
@@ -18,7 +18,7 @@
 		},
 		{
 			"parameters": {},
-			"id": "6ff504ba-4d5f-4365-9ee2-3483f6a8f0ec",
+			"id": "1ee45697-1459-4a43-967f-f46a6459ad1b",
 			"name": "Manual Trigger",
 			"type": "n8n-nodes-base.manualTrigger",
 			"typeVersion": 1,
@@ -40,7 +40,7 @@
 					]
 				}
 			},
-			"id": "6782ccaf-c292-4f1e-9306-3142689ae559",
+			"id": "8c923dcd-f60d-4c45-bad7-e9c673e2884e",
 			"name": "Schedule Trigger",
 			"type": "n8n-nodes-base.scheduleTrigger",
 			"typeVersion": 1.2,
@@ -54,94 +54,100 @@
 				"assignments": {
 					"assignments": [
 						{
-							"id": "9c4dd780-c582-4852-9d71-8e7e0d8bf0ed",
+							"id": "deed1383-8321-4746-8355-7fea8c533d63",
 							"name": "downloadsFolder",
 							"value": "/Users/figueroaf/.n8n-files",
 							"type": "string"
 						},
 						{
-							"id": "6c1d2bb4-4983-46e3-a103-c8b4e4fbda15",
+							"id": "df730746-b103-4fa6-aeaf-9738baf8d77f",
 							"name": "hashtags",
 							"value": "#ufc #mma #ufcnews #mixedmartialarts #fightnews",
 							"type": "string"
 						},
 						{
-							"id": "585be7bf-f824-47a7-8e15-e7ca26d04c6b",
+							"id": "96280767-946a-40b8-a86e-65712f974650",
 							"name": "maxStoryAgeHours",
 							"value": 48,
 							"type": "number"
 						},
 						{
-							"id": "6209e841-c681-47d1-949f-c078a4baf6a0",
+							"id": "6dfeebe5-b186-4ab1-96a3-110addbd9641",
 							"name": "ollamaBaseUrl",
 							"value": "http://127.0.0.1:11434",
 							"type": "string"
 						},
 						{
-							"id": "ecd3ea53-b2bd-49d0-a21e-3d6f938a29d5",
+							"id": "1f6507f8-2ab9-4f04-bae7-9dd6e7bdf4b8",
 							"name": "ollamaModel",
 							"value": "llama3.2",
 							"type": "string"
 						},
 						{
-							"id": "4e85b1ff-9b18-4f90-9c41-6679eeee8890",
+							"id": "242f05bd-0842-4113-9784-e81754fa8857",
 							"name": "includeLinkInCaption",
 							"value": false,
 							"type": "boolean"
 						},
 						{
-							"id": "38277e4b-2ac6-4faa-a2f2-981962af798f",
+							"id": "0cf85459-3983-45c0-a2b1-b7e5fcf4ac4a",
 							"name": "imageWidth",
 							"value": 1080,
 							"type": "number"
 						},
 						{
-							"id": "d89e7768-8246-4f4a-950a-d5ee1b060c9e",
+							"id": "77d9096a-92f5-4aad-b0eb-08a1d48b8ec4",
 							"name": "imageHeight",
 							"value": 1920,
 							"type": "number"
 						},
 						{
-							"id": "292851d4-0ee6-43f4-bf9a-db64ff11cc34",
+							"id": "85cd4489-1dde-4f0b-a5d6-d35576539d2c",
 							"name": "postLabel",
 							"value": "UFC NEWS",
 							"type": "string"
 						},
 						{
-							"id": "4dc69a66-ed5c-46dc-b767-50181d2283da",
+							"id": "f6f993f9-0889-4320-ab0a-5f5576d724b2",
 							"name": "accentColor",
 							"value": "#D20A0A",
 							"type": "string"
 						},
 						{
-							"id": "b14057e1-b0b8-46c3-a5a9-a9fe925683cf",
+							"id": "bc983ee9-5d4c-4aca-9c7a-7c794adfcac8",
 							"name": "headlineFont",
 							"value": "/System/Library/Fonts/Supplemental/Impact.ttf",
 							"type": "string"
 						},
 						{
-							"id": "45b34dcd-01fc-4509-80a2-e758d9435722",
+							"id": "fce15920-910f-4366-a9ed-6b2fc121ad74",
 							"name": "detailFont",
 							"value": "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
 							"type": "string"
 						},
 						{
-							"id": "363d30c2-cbf0-42d7-95f5-2b55fe38dc6d",
+							"id": "6cf144b2-e94e-4a1b-92ba-cc1c13b4664e",
 							"name": "logoFilePath",
 							"value": "/Users/figueroaf/Desktop/Projects/Automated-Insta-Posts/workflows/assets/fw-logo-black-bg.png",
 							"type": "string"
 						},
 						{
-							"id": "324b1779-d8d7-4ae1-989c-7c823fb18afa",
+							"id": "c05d7807-92d0-4369-9103-9b20fae1028b",
 							"name": "logoMarkScale",
 							"value": 12,
+							"type": "number"
+						},
+						{
+							"id": "ee291c7d-06e3-43e4-8b98-848596d12424",
+							"name": "exportsPerRun",
+							"value": 5,
 							"type": "number"
 						}
 					]
 				},
 				"options": {}
 			},
-			"id": "2a727c13-d17d-4e45-9961-09ac84db8c3f",
+			"id": "82664544-05c1-4053-9bd7-7525659172f8",
 			"name": "Settings",
 			"type": "n8n-nodes-base.set",
 			"typeVersion": 3.4,
@@ -152,9 +158,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Free RSS feeds for UFC/MMA news. A source works only if article images can be fetched remotely.\nconst feeds = [\n\t{ name: 'UFC.com', url: 'https://www.ufc.com/rss/news', allUfc: true },\n\t{ name: 'ESPN MMA', url: 'https://www.espn.com/espn/rss/mma/news' },\n\t{ name: 'MMA Fighting', url: 'https://www.mmafighting.com/rss/index.xml' },\n\t{ name: 'Sherdog', url: 'https://www.sherdog.com/rss/news.xml' },\n\t{ name: 'MMA News', url: 'https://www.mmanews.com/feed' },\n\t{ name: 'BJPenn.com', url: 'https://bjpenn.com/feed/' },\n\t{ name: 'LowKick MMA', url: 'https://www.lowkickmma.com/feed/' },\n\t{ name: 'Cageside Press', url: 'https://www.cagesidepress.com/feed' },\n];\n\nreturn feeds.map((feed) => ({ json: feed }));"
+				"jsCode": "// Free RSS feeds for UFC/MMA news. A source works only if article images can be fetched remotely.\nconst feeds = [\n\t{ name: 'UFC.com', url: 'https://www.ufc.com/rss/news', allUfc: true },\n\t{ name: 'ESPN MMA', url: 'https://www.espn.com/espn/rss/mma/news' },\n\t{ name: 'MMA Fighting', url: 'https://www.mmafighting.com/rss/index.xml' },\n\t{ name: 'Sherdog', url: 'https://www.sherdog.com/rss/news.xml' },\n\t{ name: 'MMA News', url: 'https://www.mmanews.com/feed' },\n\t{ name: 'BJPenn.com', url: 'https://www.bjpenn.com/feed/' },\n\t{ name: 'LowKick MMA', url: 'https://www.lowkickmma.com/feed/' },\n\t{ name: 'Cageside Press', url: 'https://www.cagesidepress.com/feed' },\n\t{ name: 'MMA Mania', url: 'https://www.mmamania.com/rss/current.xml' },\n\t{ name: 'Bloody Elbow', url: 'https://bloodyelbow.com/feed/' },\n\t{ name: 'MiddleEasy', url: 'https://middleeasy.com/feed/' },\n\t{ name: 'Fightful', url: 'https://fightful.com/rss.xml' },\n\t{ name: 'EssentiallySports', url: 'https://www.essentiallysports.com/category/ufc/feed/', allUfc: true },\n\t{ name: 'Fighters Only', url: 'https://www.fightersonlymag.com/feed' },\n\t{ name: 'CBS Sports MMA', url: 'https://www.cbssports.com/rss/headlines/mma/' },\n];\n\nreturn feeds.map((feed) => ({ json: feed }));\n"
 			},
-			"id": "e6a6836b-d337-4926-b883-f9094912e4ae",
+			"id": "4aa1337f-249b-40b7-828f-dabd75faf3eb",
 			"name": "News sources",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -170,7 +176,7 @@
 					"customFields": "media:content, media:thumbnail"
 				}
 			},
-			"id": "5e6c9897-119a-42f3-a6f6-14f00b3d5be5",
+			"id": "76c7ce25-d915-4003-9fe4-aa2267ffb046",
 			"name": "Read news feeds",
 			"type": "n8n-nodes-base.rssFeedRead",
 			"typeVersion": 1.2,
@@ -182,9 +188,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Pick the newest UFC stories that this workflow has not posted or skipped yet.\nconst settings = $('Settings').first().json;\nconst feeds = $('News sources').all().map((item) => item.json);\nconst memory = $getWorkflowStaticData('global');\nconst seen = new Set([...(memory.postedKeys ?? []), ...(memory.skippedKeys ?? [])]);\n\nconst maxAgeMs = Number(settings.maxStoryAgeHours || 48) * 60 * 60 * 1000;\nconst candidateCount = 12;\n\n// The Code node sandbox has no URL class, so read the host and path with a pattern.\nconst urlParts = (url) => {\n\tconst match = String(url ?? '')\n\t\t.trim()\n\t\t.match(/^https?:\\/\\/([^/?#]+)([^?#]*)/i);\n\tif (!match) return null;\n\treturn {\n\t\thost: match[1]\n\t\t\t.replace(/^[^@]*@/, '')\n\t\t\t.replace(/:\\d+$/, '')\n\t\t\t.replace(/^www\\./i, '')\n\t\t\t.toLowerCase(),\n\t\tpath: match[2],\n\t};\n};\n\nconst host = (url) => urlParts(url)?.host ?? '';\n\nconst linkKey = (url) => {\n\tconst parts = urlParts(url);\n\tif (!parts) return `link:${String(url).toLowerCase()}`;\n\treturn `link:${parts.host}${parts.path.replace(/\\/+$/, '')}`.toLowerCase();\n};\n\nconst titleKey = (title) =>\n\t`title:${String(title)\n\t\t.toLowerCase()\n\t\t.replace(/[^a-z0-9]+/g, ' ')\n\t\t.trim()}`;\n\nconst firstUrl = (value) => {\n\tif (!value) return '';\n\tif (typeof value === 'string') return value;\n\tif (Array.isArray(value)) return firstUrl(value[0]);\n\treturn value.url || value.$?.url || value.href || '';\n};\n\nconst looksLikeImage = (url) => /\\.(jpe?g|png|webp|gif|avif)(\\?|$)/i.test(url);\n\nconst decodeUrl = (url) => String(url).replace(/&#0?38;|&amp;/g, '&');\n\nfunction feedImage(item) {\n\tconst enclosure = item.enclosure;\n\tif (enclosure?.url && (/^image\\//.test(enclosure.type || '') || looksLikeImage(enclosure.url))) {\n\t\treturn decodeUrl(enclosure.url);\n\t}\n\tconst media = firstUrl(item['media:content']) || firstUrl(item['media:thumbnail']);\n\tif (media) return decodeUrl(media);\n\tconst html = `${item['content:encoded'] || ''} ${item.content || ''}`;\n\tconst img = html.match(/<img[^>]+src=[\"']([^\"']+)[\"']/i);\n\treturn img ? decodeUrl(img[1]) : '';\n}\n\nconst feedForLink = (link) => {\n\tconst linkHost = host(link);\n\tif (!linkHost) return undefined;\n\treturn feeds.find((feed) => {\n\t\tconst feedHost = host(feed.url);\n\t\tif (!feedHost) return false;\n\t\treturn (\n\t\t\tlinkHost === feedHost || linkHost.endsWith(`.${feedHost}`) || feedHost.endsWith(`.${linkHost}`)\n\t\t);\n\t});\n};\n\nconst now = Date.now();\nconst stories = [];\nconst keysInThisRun = new Set();\n\nfor (const { json: item } of $('Read news feeds').all()) {\n\tif (item.error || !item.title || !item.link) continue;\n\n\tconst published = new Date(item.isoDate || item.pubDate || 0).getTime();\n\tif (!published || now - published > maxAgeMs || published > now + 60 * 60 * 1000) continue;\n\n\tconst feed = feedForLink(item.link);\n\tconst categories = Array.isArray(item.categories) ? item.categories.join(' ') : '';\n\tconst text = `${item.title} ${categories} ${item.contentSnippet || ''} ${item.link}`;\n\tconst hasUfc =\n\t\tfeed?.allUfc ||\n\t\t/(^|[^a-z])ufc([^a-z]|$)/i.test(text) ||\n\t\t/\\bultimate fighting championship\\b/i.test(text) ||\n\t\t/\\bufc\\s*\\d{2,4}\\b/i.test(text);\n\tif (!hasUfc) continue;\n\n\tconst nonUfcSport =\n\t\t/\\b(wrestling|real american freestyle|\\braf\\b|wwe|bare knuckle|nhra|nba\\b|nfl\\b|mlb\\b|ncaa wrestling)\\b/i.test(\n\t\t\ttext,\n\t\t);\n\tif (!feed?.allUfc && nonUfcSport && !/(^|[^a-z])ufc([^a-z]|$)/i.test(text)) continue;\n\n\tconst keys = [linkKey(item.link), titleKey(item.title)];\n\tif (keys.some((key) => seen.has(key) || keysInThisRun.has(key))) continue;\n\tkeys.forEach((key) => keysInThisRun.add(key));\n\n\tstories.push({\n\t\ttitle: String(item.title).trim(),\n\t\tlink: item.link,\n\t\tsource: feed?.name || host(item.link),\n\t\tpublishedAt: new Date(published).toISOString(),\n\t\tsnippet: String(item.contentSnippet || item.content || '').slice(0, 2000),\n\t\tfeedImage: feedImage(item),\n\t\tkeys,\n\t});\n}\n\nstories.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));\n\nreturn stories.slice(0, candidateCount).map((story) => ({ json: story }));"
+				"jsCode": "// Pick the newest UFC stories that this workflow has not posted or skipped yet.\nconst settings = $('Settings').first().json;\nconst feeds = $('News sources').all().map((item) => item.json);\nconst memory = $getWorkflowStaticData('global');\nconst seen = new Set([...(memory.postedKeys ?? []), ...(memory.skippedKeys ?? [])]);\n\nconst maxAgeMs = Number(settings.maxStoryAgeHours || 48) * 60 * 60 * 1000;\n// Extra candidates, because some stories have no usable image.\nconst candidateCount = Math.max(12, (Number(settings.exportsPerRun) || 5) * 5);\n\n// The Code node sandbox has no URL class, so read the host and path with a pattern.\nconst urlParts = (url) => {\n\tconst match = String(url ?? '')\n\t\t.trim()\n\t\t.match(/^https?:\\/\\/([^/?#]+)([^?#]*)/i);\n\tif (!match) return null;\n\treturn {\n\t\thost: match[1]\n\t\t\t.replace(/^[^@]*@/, '')\n\t\t\t.replace(/:\\d+$/, '')\n\t\t\t.replace(/^www\\./i, '')\n\t\t\t.toLowerCase(),\n\t\tpath: match[2],\n\t};\n};\n\nconst host = (url) => urlParts(url)?.host ?? '';\n\nconst linkKey = (url) => {\n\tconst parts = urlParts(url);\n\tif (!parts) return `link:${String(url).toLowerCase()}`;\n\treturn `link:${parts.host}${parts.path.replace(/\\/+$/, '')}`.toLowerCase();\n};\n\nconst titleKey = (title) =>\n\t`title:${String(title)\n\t\t.toLowerCase()\n\t\t.replace(/[^a-z0-9]+/g, ' ')\n\t\t.trim()}`;\n\nconst firstUrl = (value) => {\n\tif (!value) return '';\n\tif (typeof value === 'string') return value;\n\tif (Array.isArray(value)) return firstUrl(value[0]);\n\treturn value.url || value.$?.url || value.href || '';\n};\n\nconst looksLikeImage = (url) => /\\.(jpe?g|png|webp|gif|avif)(\\?|$)/i.test(url);\n\nconst decodeUrl = (url) => String(url).replace(/&#0?38;|&amp;/g, '&');\n\nfunction feedImage(item) {\n\tconst enclosure = item.enclosure;\n\tif (enclosure?.url && (/^image\\//.test(enclosure.type || '') || looksLikeImage(enclosure.url))) {\n\t\treturn decodeUrl(enclosure.url);\n\t}\n\tconst media = firstUrl(item['media:content']) || firstUrl(item['media:thumbnail']);\n\tif (media) return decodeUrl(media);\n\tconst html = `${item['content:encoded'] || ''} ${item.content || ''}`;\n\tconst img = html.match(/<img[^>]+src=[\"']([^\"']+)[\"']/i);\n\treturn img ? decodeUrl(img[1]) : '';\n}\n\nconst feedForLink = (link) => {\n\tconst linkHost = host(link);\n\tif (!linkHost) return undefined;\n\treturn feeds.find((feed) => {\n\t\tconst feedHost = host(feed.url);\n\t\tif (!feedHost) return false;\n\t\treturn (\n\t\t\tlinkHost === feedHost || linkHost.endsWith(`.${feedHost}`) || feedHost.endsWith(`.${linkHost}`)\n\t\t);\n\t});\n};\n\nconst now = Date.now();\nconst stories = [];\nconst keysInThisRun = new Set();\n\nfor (const { json: item } of $('Read news feeds').all()) {\n\tif (item.error || !item.title || !item.link) continue;\n\n\tconst published = new Date(item.isoDate || item.pubDate || 0).getTime();\n\tif (!published || now - published > maxAgeMs || published > now + 60 * 60 * 1000) continue;\n\n\tconst feed = feedForLink(item.link);\n\tconst categories = Array.isArray(item.categories) ? item.categories.join(' ') : '';\n\tconst text = `${item.title} ${categories} ${item.contentSnippet || ''} ${item.link}`;\n\tconst hasUfc =\n\t\tfeed?.allUfc ||\n\t\t/(^|[^a-z])ufc([^a-z]|$)/i.test(text) ||\n\t\t/\\bultimate fighting championship\\b/i.test(text) ||\n\t\t/\\bufc\\s*\\d{2,4}\\b/i.test(text);\n\tif (!hasUfc) continue;\n\n\tconst nonUfcSport =\n\t\t/\\b(wrestling|real american freestyle|\\braf\\b|wwe|bare knuckle|nhra|nba\\b|nfl\\b|mlb\\b|ncaa wrestling)\\b/i.test(\n\t\t\ttext,\n\t\t);\n\tif (!feed?.allUfc && nonUfcSport && !/(^|[^a-z])ufc([^a-z]|$)/i.test(text)) continue;\n\n\tconst keys = [linkKey(item.link), titleKey(item.title)];\n\tif (keys.some((key) => seen.has(key) || keysInThisRun.has(key))) continue;\n\tkeys.forEach((key) => keysInThisRun.add(key));\n\n\tstories.push({\n\t\ttitle: String(item.title).trim(),\n\t\tlink: item.link,\n\t\tsource: feed?.name || host(item.link),\n\t\tpublishedAt: new Date(published).toISOString(),\n\t\tsnippet: String(item.contentSnippet || item.content || '').slice(0, 2000),\n\t\tfeedImage: feedImage(item),\n\t\tkeys,\n\t});\n}\n\nstories.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));\n\n// Take the newest story of each outlet in turn, so one busy feed does not fill every slot.\nconst bySource = new Map();\nfor (const story of stories) {\n\tif (!bySource.has(story.source)) bySource.set(story.source, []);\n\tbySource.get(story.source).push(story);\n}\nconst queues = [...bySource.values()];\nconst mixed = [];\nwhile (mixed.length < candidateCount && queues.some((queue) => queue.length > 0)) {\n\tfor (const queue of queues) {\n\t\tconst next = queue.shift();\n\t\tif (next) mixed.push(next);\n\t\tif (mixed.length >= candidateCount) break;\n\t}\n}\n\nreturn mixed.map((story) => ({ json: story }));"
 			},
-			"id": "219dcff9-9b13-413f-ac2f-1932b17dcba6",
+			"id": "9c30132e-e276-4090-91dd-0aec3b1f861b",
 			"name": "Pick new UFC stories",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -215,7 +221,7 @@
 					"timeout": 15000
 				}
 			},
-			"id": "af8b665a-e346-46e1-ba13-2cb83313caff",
+			"id": "dc797551-acdd-4c2a-ba43-52751c7dd360",
 			"name": "Fetch article pages",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
@@ -227,9 +233,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Turn each picked story into a post draft: clean article facts, image links, and a backup caption.\n// The AI caption is written later, for the one story that gets exported.\nconst settings = $('Settings').first().json;\nconst stories = $('Pick new UFC stories').all();\nconst pages = $input.all();\n\nconst NAMED_ENTITIES = {\n\tamp: '&',\n\tquot: '\"',\n\tapos: \"'\",\n\tnbsp: ' ',\n\tlt: '<',\n\tgt: '>',\n\tlsquo: '‘',\n\trsquo: '’',\n\tldquo: '“',\n\trdquo: '”',\n\thellip: '…',\n\tndash: '–',\n\tmdash: '—',\n};\n\nconst codePoint = (value) =>\n\tvalue > 0 && value <= 0x10ffff ? String.fromCodePoint(value) : '';\n\nconst decode = (text) =>\n\tString(text ?? '')\n\t\t.replace(/&#x([0-9a-f]+);/gi, (_, hex) => codePoint(parseInt(hex, 16)))\n\t\t.replace(/&#(\\d+);/g, (_, dec) => codePoint(Number(dec)))\n\t\t.replace(/&([a-z]+);/gi, (entity, name) => NAMED_ENTITIES[name.toLowerCase()] ?? entity);\n\nfunction metaContent(html, names) {\n\tif (typeof html !== 'string') return '';\n\tfor (const tag of html.match(/<meta\\b[^>]*>/gi) || []) {\n\t\tconst name = tag.match(/(?:property|name)\\s*=\\s*[\"']([^\"']+)[\"']/i)?.[1]?.toLowerCase();\n\t\tif (!names.includes(name)) continue;\n\t\tconst content = tag.match(/content\\s*=\\s*\"([^\"]*)\"|content\\s*=\\s*'([^']*)'/i);\n\t\tconst value = content?.[1] ?? content?.[2];\n\t\tif (value) return decode(value).trim();\n\t}\n\treturn '';\n}\n\nfunction pageImage(html) {\n\tconst url = metaContent(html, ['og:image', 'og:image:secure_url', 'twitter:image', 'twitter:image:src']);\n\treturn /^https?:\\/\\//i.test(url) ? url : '';\n}\n\nconst pageSummary = (html) => metaContent(html, ['og:description', 'description', 'twitter:description']);\n\nconst stripTags = (html) =>\n\tString(html ?? '')\n\t\t.replace(/<(script|style|noscript|figure|figcaption|iframe|svg|form|button)\\b[\\s\\S]*?<\\/\\1>/gi, ' ')\n\t\t.replace(/<[^>]+>/g, ' ');\n\nfunction cleanText(text) {\n\treturn decode(stripTags(text))\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/The post .* appeared first on .*$/is, '')\n\t\t.replace(/Read the Full Article Here/gi, ' ')\n\t\t.replace(/\\bAdvertisement\\b/g, ' ')\n\t\t.replace(/\\s*\\[(?:…|\\.\\.\\.)\\]\\s*$/, '…')\n\t\t.replace(/\\s+([,.;:!?])/g, '$1')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim();\n}\n\nconst PAGE_CHROME =\n\t/(cookie|privacy policy|terms of (use|service)|newsletter|subscribe|sign up|sign in|log in|follow (us|me|him|her)\\b|all rights reserved|©|click here|download the app|getty images|photo (by|credit)|image credit|read more|related:|share this|leave a comment|join the conversation|affiliate|sportsbook|promo code|odds (via|by))/i;\n\nconst SOCIAL_EMBED =\n\t/<blockquote\\b[^>]*class\\s*=\\s*[\"'][^\"']*(twitter|instagram|tiktok|bluesky)[^\"']*[\"'][\\s\\S]*?<\\/blockquote>/gi;\n\n// Split the article into text blocks. Some sites use <p>, others use <br> between paragraphs.\nfunction articleBlocks(html) {\n\tif (typeof html !== 'string') return [];\n\tconst scope =\n\t\thtml.match(/<article\\b[\\s\\S]*?<\\/article>/i)?.[0] || html.match(/<main\\b[\\s\\S]*?<\\/main>/i)?.[0] || html;\n\treturn scope\n\t\t.replace(/\\s+/g, ' ')\n\t\t.replace(/<(script|style|noscript|figure|figcaption|iframe|svg|form|button|nav|aside|footer)\\b[\\s\\S]*?<\\/\\1>/gi, '\\n')\n\t\t.replace(SOCIAL_EMBED, '\\n')\n\t\t.replace(/<br\\s*\\/?>|<\\/(p|div|li|h[1-6]|blockquote|section|tr)>/gi, '\\n')\n\t\t.split('\\n')\n\t\t.map(cleanText)\n\t\t.filter((block) => block.length >= 60 && !PAGE_CHROME.test(block));\n}\n\nconst ABBREVIATION = /\\b(vs|jr|sr|mr|mrs|ms|dr|st|no|u\\.s|u\\.k|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\\.$/i;\n\nfunction sentences(text) {\n\tconst pieces = String(text)\n\t\t.split(/(?<=[.!?…][\"'”’)]?)\\s+(?=[\"'“‘(]?[A-Z0-9])/)\n\t\t.map((piece) => piece.trim())\n\t\t.filter(Boolean);\n\tconst out = [];\n\tfor (const piece of pieces) {\n\t\tconst last = out[out.length - 1];\n\t\tif (last && ABBREVIATION.test(last)) out[out.length - 1] = `${last} ${piece}`;\n\t\telse out.push(piece);\n\t}\n\treturn out;\n}\n\nconst fingerprint = (text) =>\n\tString(text)\n\t\t.toLowerCase()\n\t\t.replace(/[^a-z0-9]+/g, ' ')\n\t\t.trim();\n\n// A whole sentence ends with a full stop, a question mark, or an exclamation mark.\n// Subheadings and summaries that a site cut short do not.\nconst isWhole = (sentence) => /[.!?][\"'”’)\\]]*$/.test(sentence) && !/(…|\\.\\.\\.)[\"'”’)\\]]*$/.test(sentence);\n\n// Collect unique, whole sentences about the story, best source first.\nfunction storyFacts(story, html) {\n\tconst title = decode(story.title).trim();\n\tconst titlePrint = fingerprint(title);\n\tconst seen = new Set([titlePrint]);\n\tconst facts = [];\n\n\tconst add = (text, { anySentence = false } = {}) => {\n\t\tconst withoutTitle = title ? String(text).split(title).join(' ') : String(text);\n\t\tfor (const sentence of sentences(cleanText(withoutTitle))) {\n\t\t\tconst print = fingerprint(sentence);\n\t\t\tif (print.length < 25 || seen.has(print) || titlePrint.includes(print)) continue;\n\t\t\tif (!anySentence && !isWhole(sentence)) continue;\n\t\t\tif (PAGE_CHROME.test(sentence)) continue;\n\t\t\tseen.add(print);\n\t\t\tfacts.push(sentence);\n\t\t}\n\t};\n\n\tadd(pageSummary(html));\n\tfor (const block of articleBlocks(html)) add(block);\n\tif (facts.join(' ').length < 240) add(story.snippet);\n\tif (facts.length === 0) add(pageSummary(html) || story.snippet, { anySentence: true });\n\treturn facts;\n}\n\n// Join whole sentences until the limit; never stop in the middle of a word.\nfunction joinUpTo(parts, max) {\n\tlet text = '';\n\tfor (const part of parts) {\n\t\tconst next = text ? `${text} ${part}` : part;\n\t\tif (next.length > max) break;\n\t\ttext = next;\n\t}\n\tif (text || parts.length === 0) return text;\n\tconst cut = parts[0].slice(0, max);\n\treturn `${cut.slice(0, Math.max(cut.lastIndexOf(' '), max - 30)).trim()}…`;\n}\n\nfunction backupCaption(title, facts) {\n\tconst detail = joinUpTo(facts, 420);\n\treturn detail ? `${title}\\n\\n${detail}` : title;\n}\n\nconst proxied = (source, params) =>\n\t`https://images.weserv.nl/?url=${encodeURIComponent(source)}&${params}`;\n\nfunction instagramImage(source) {\n\tconst url = proxied(source, 'w=1080&h=1080&fit=contain&cbg=000000&output=jpg&q=90');\n\tconst localLogo = String(settings.logoFilePath || '').trim();\n\tif (localLogo) return url;\n\tconst logo = String(settings.logoPublicUrl || '').trim();\n\tif (!logo || logo.includes('PASTE_PUBLIC')) return url;\n\tconst scale = Number(settings.logoMarkScale || 14);\n\tconst pad = Number(settings.logoMarkPad || 22);\n\treturn `${url}&mark=${encodeURIComponent(logo)}&markpos=bottom-right&markpad=${pad}&markscale=${scale}`;\n}\n\nconst width = Math.round(Number(settings.imageWidth) || 1080);\nconst height = Math.round(Number(settings.imageHeight) || 1920);\nconst tags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t.toLowerCase()\n\t.trim();\n\nconst posts = [];\nfor (let i = 0; i < stories.length; i++) {\n\tconst story = stories[i].json;\n\tconst html = pages[i]?.json?.data;\n\tconst sourceImage = pageImage(html) || story.feedImage;\n\tif (!sourceImage) continue;\n\n\tconst title = decode(story.title).replace(/\\s+/g, ' ').trim();\n\tconst facts = storyFacts(story, html);\n\tconst captionBody = backupCaption(title, facts);\n\n\tposts.push({\n\t\tjson: {\n\t\t\t...story,\n\t\t\ttitle,\n\t\t\tsourceImage,\n\t\t\timageUrl: instagramImage(sourceImage),\n\t\t\t// Sharp photo at full width, and a blurred copy that fills the whole frame behind it.\n\t\t\tphotoUrl: proxied(sourceImage, `w=${width}&output=png`),\n\t\t\tbackdropUrl: proxied(sourceImage, `w=${width}&h=${height}&fit=cover&blur=35&output=jpg&q=75`),\n\t\t\tstoryFacts: joinUpTo(facts, 1800),\n\t\t\tcaptionBody,\n\t\t\tcaption: `${captionBody}\\n\\nSource: ${story.source}\\n\\n${tags}`,\n\t\t\tcaptionSource: 'backup',\n\t\t},\n\t});\n}\n\nreturn posts;\n"
+				"jsCode": "// Turn each picked story into a post draft: clean article facts, image links, and a backup caption.\n// The AI caption is written later for each story that gets exported.\nconst settings = $('Settings').first().json;\nconst stories = $('Pick new UFC stories').all();\nconst pages = $input.all();\n\nconst NAMED_ENTITIES = {\n\tamp: '&',\n\tquot: '\"',\n\tapos: \"'\",\n\tnbsp: ' ',\n\tlt: '<',\n\tgt: '>',\n\tlsquo: '‘',\n\trsquo: '’',\n\tldquo: '“',\n\trdquo: '”',\n\thellip: '…',\n\tndash: '–',\n\tmdash: '—',\n};\n\nconst codePoint = (value) =>\n\tvalue > 0 && value <= 0x10ffff ? String.fromCodePoint(value) : '';\n\nconst decode = (text) =>\n\tString(text ?? '')\n\t\t.replace(/&#x([0-9a-f]+);/gi, (_, hex) => codePoint(parseInt(hex, 16)))\n\t\t.replace(/&#(\\d+);/g, (_, dec) => codePoint(Number(dec)))\n\t\t.replace(/&([a-z]+);/gi, (entity, name) => NAMED_ENTITIES[name.toLowerCase()] ?? entity);\n\nfunction metaContent(html, names) {\n\tif (typeof html !== 'string') return '';\n\tfor (const tag of html.match(/<meta\\b[^>]*>/gi) || []) {\n\t\tconst name = tag.match(/(?:property|name)\\s*=\\s*[\"']([^\"']+)[\"']/i)?.[1]?.toLowerCase();\n\t\tif (!names.includes(name)) continue;\n\t\tconst content = tag.match(/content\\s*=\\s*\"([^\"]*)\"|content\\s*=\\s*'([^']*)'/i);\n\t\tconst value = content?.[1] ?? content?.[2];\n\t\tif (value) return decode(value).trim();\n\t}\n\treturn '';\n}\n\nfunction pageImage(html) {\n\tconst url = metaContent(html, ['og:image', 'og:image:secure_url', 'twitter:image', 'twitter:image:src']);\n\treturn /^https?:\\/\\//i.test(url) ? url : '';\n}\n\nconst pageSummary = (html) => metaContent(html, ['og:description', 'description', 'twitter:description']);\n\nconst stripTags = (html) =>\n\tString(html ?? '')\n\t\t.replace(/<(script|style|noscript|figure|figcaption|iframe|svg|form|button)\\b[\\s\\S]*?<\\/\\1>/gi, ' ')\n\t\t.replace(/<[^>]+>/g, ' ');\n\nfunction cleanText(text) {\n\treturn decode(stripTags(text))\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/The post .* appeared first on .*$/is, '')\n\t\t.replace(/Read the Full Article Here/gi, ' ')\n\t\t.replace(/\\bAdvertisement\\b/g, ' ')\n\t\t.replace(/\\s*\\[(?:…|\\.\\.\\.)\\]\\s*$/, '…')\n\t\t.replace(/\\s+([,.;:!?])/g, '$1')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim();\n}\n\nconst PAGE_CHROME =\n\t/(cookie|privacy policy|terms of (use|service)|newsletter|subscribe|sign up|sign in|log in|follow (us|me|him|her)\\b|all rights reserved|©|click here|download the app|getty images|photo (by|credit)|image credit|read more|related:|share this|leave a comment|join the conversation|affiliate|sportsbook|promo code|odds (via|by))/i;\n\nconst SOCIAL_EMBED =\n\t/<blockquote\\b[^>]*class\\s*=\\s*[\"'][^\"']*(twitter|instagram|tiktok|bluesky)[^\"']*[\"'][\\s\\S]*?<\\/blockquote>/gi;\n\n// Split the article into text blocks. Some sites use <p>, others use <br> between paragraphs.\nfunction articleBlocks(html) {\n\tif (typeof html !== 'string') return [];\n\tconst scope =\n\t\thtml.match(/<article\\b[\\s\\S]*?<\\/article>/i)?.[0] || html.match(/<main\\b[\\s\\S]*?<\\/main>/i)?.[0] || html;\n\treturn scope\n\t\t.replace(/\\s+/g, ' ')\n\t\t.replace(/<(script|style|noscript|figure|figcaption|iframe|svg|form|button|nav|aside|footer)\\b[\\s\\S]*?<\\/\\1>/gi, '\\n')\n\t\t.replace(SOCIAL_EMBED, '\\n')\n\t\t.replace(/<br\\s*\\/?>|<\\/(p|div|li|h[1-6]|blockquote|section|tr)>/gi, '\\n')\n\t\t.split('\\n')\n\t\t.map(cleanText)\n\t\t.filter((block) => block.length >= 60 && !PAGE_CHROME.test(block));\n}\n\nconst ABBREVIATION = /\\b(vs|jr|sr|mr|mrs|ms|dr|st|no|u\\.s|u\\.k|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\\.$/i;\n\nfunction sentences(text) {\n\tconst pieces = String(text)\n\t\t.split(/(?<=[.!?…][\"'”’)]?)\\s+(?=[\"'“‘(]?[A-Z0-9])/)\n\t\t.map((piece) => piece.trim())\n\t\t.filter(Boolean);\n\tconst out = [];\n\tfor (const piece of pieces) {\n\t\tconst last = out[out.length - 1];\n\t\tif (last && ABBREVIATION.test(last)) out[out.length - 1] = `${last} ${piece}`;\n\t\telse out.push(piece);\n\t}\n\treturn out;\n}\n\nconst fingerprint = (text) =>\n\tString(text)\n\t\t.toLowerCase()\n\t\t.replace(/[^a-z0-9]+/g, ' ')\n\t\t.trim();\n\n// A whole sentence ends with a full stop, a question mark, or an exclamation mark.\n// Subheadings and summaries that a site cut short do not.\nconst isWhole = (sentence) => /[.!?][\"'”’)\\]]*$/.test(sentence) && !/(…|\\.\\.\\.)[\"'”’)\\]]*$/.test(sentence);\n\n// Collect unique, whole sentences about the story, best source first.\nfunction storyFacts(story, html) {\n\tconst title = decode(story.title).trim();\n\tconst titlePrint = fingerprint(title);\n\tconst seen = new Set([titlePrint]);\n\tconst facts = [];\n\n\tconst add = (text, { anySentence = false } = {}) => {\n\t\tconst withoutTitle = title ? String(text).split(title).join(' ') : String(text);\n\t\tfor (const sentence of sentences(cleanText(withoutTitle))) {\n\t\t\tconst print = fingerprint(sentence);\n\t\t\tif (print.length < 25 || seen.has(print) || titlePrint.includes(print)) continue;\n\t\t\tif (!anySentence && !isWhole(sentence)) continue;\n\t\t\tif (PAGE_CHROME.test(sentence)) continue;\n\t\t\tseen.add(print);\n\t\t\tfacts.push(sentence);\n\t\t}\n\t};\n\n\tadd(pageSummary(html));\n\tfor (const block of articleBlocks(html)) add(block);\n\tif (facts.join(' ').length < 240) add(story.snippet);\n\tif (facts.length === 0) add(pageSummary(html) || story.snippet, { anySentence: true });\n\treturn facts;\n}\n\n// Join whole sentences until the limit; never stop in the middle of a word.\nfunction joinUpTo(parts, max) {\n\tlet text = '';\n\tfor (const part of parts) {\n\t\tconst next = text ? `${text} ${part}` : part;\n\t\tif (next.length > max) break;\n\t\ttext = next;\n\t}\n\tif (text || parts.length === 0) return text;\n\tconst cut = parts[0].slice(0, max);\n\treturn `${cut.slice(0, Math.max(cut.lastIndexOf(' '), max - 30)).trim()}…`;\n}\n\nfunction backupCaption(title, facts) {\n\tconst detail = joinUpTo(facts, 420);\n\treturn detail ? `${title}\\n\\n${detail}` : title;\n}\n\nconst proxied = (source, params) =>\n\t`https://images.weserv.nl/?url=${encodeURIComponent(source)}&${params}`;\n\nfunction instagramImage(source) {\n\tconst url = proxied(source, 'w=1080&h=1080&fit=contain&cbg=000000&output=jpg&q=90');\n\tconst localLogo = String(settings.logoFilePath || '').trim();\n\tif (localLogo) return url;\n\tconst logo = String(settings.logoPublicUrl || '').trim();\n\tif (!logo || logo.includes('PASTE_PUBLIC')) return url;\n\tconst scale = Number(settings.logoMarkScale || 14);\n\tconst pad = Number(settings.logoMarkPad || 22);\n\treturn `${url}&mark=${encodeURIComponent(logo)}&markpos=bottom-right&markpad=${pad}&markscale=${scale}`;\n}\n\nconst width = Math.round(Number(settings.imageWidth) || 1080);\nconst height = Math.round(Number(settings.imageHeight) || 1920);\nconst tags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t.toLowerCase()\n\t.split(/\\s+/)\n\t.filter(Boolean)\n\t.slice(0, 5)\n\t.join(' ');\n\nconst posts = [];\nfor (let i = 0; i < stories.length; i++) {\n\tconst story = stories[i].json;\n\tconst html = pages[i]?.json?.data;\n\tconst sourceImage = pageImage(html) || story.feedImage;\n\tif (!sourceImage) continue;\n\n\tconst title = decode(story.title).replace(/\\s+/g, ' ').trim();\n\tconst facts = storyFacts(story, html);\n\tconst captionBody = backupCaption(title, facts);\n\n\tposts.push({\n\t\tjson: {\n\t\t\t...story,\n\t\t\ttitle,\n\t\t\tsourceImage,\n\t\t\timageUrl: instagramImage(sourceImage),\n\t\t\t// Sharp photo at full width, and a blurred copy that fills the whole frame behind it.\n\t\t\tphotoUrl: proxied(sourceImage, `w=${width}&output=png`),\n\t\t\tbackdropUrl: proxied(sourceImage, `w=${width}&h=${height}&fit=cover&blur=35&output=jpg&q=75`),\n\t\t\tstoryFacts: joinUpTo(facts, 1800),\n\t\t\tcaptionBody,\n\t\t\tcaption: `${captionBody}\\n\\nSource: ${story.source}\\n\\n${tags}`,\n\t\t\tcaptionSource: 'backup',\n\t\t},\n\t});\n}\n\nreturn posts;\n"
 			},
-			"id": "9c1bf9b2-97e5-488a-b80c-51344c66d2bc",
+			"id": "f6303de3-4742-4ce4-bf81-d41bdebb3867",
 			"name": "Build Instagram posts",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -253,7 +259,7 @@
 					"timeout": 30000
 				}
 			},
-			"id": "26aa4e1b-8dd4-4020-b93a-ea2fb6f48240",
+			"id": "f763e90f-6d74-4247-98c5-26d0d1d4def5",
 			"name": "Check images",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
@@ -265,9 +271,9 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Pick the newest story whose image is a valid JPEG.\nconst posts = $('Build Instagram posts').all();\nconst checks = $('Check images').all();\n\nconst working = posts.filter((post, i) => {\n\tconst check = checks[i]?.json ?? {};\n\tconst type = String(check.headers?.['content-type'] ?? '');\n\treturn check.statusCode === 200 && type.startsWith('image/jpeg');\n});\n\nconst post = working[0];\nreturn post ? [{ json: post.json }] : [];"
+				"jsCode": "// Pick up to N newest stories whose image is a valid JPEG (N from Settings → exportsPerRun).\nconst settings = $('Settings').first().json;\nconst limit = Math.max(1, Math.min(10, Number(settings.exportsPerRun) || 5));\n\nconst posts = $('Build Instagram posts').all();\nconst checks = $('Check images').all();\n\nconst working = posts.filter((post, i) => {\n\tconst check = checks[i]?.json ?? {};\n\tconst type = String(check.headers?.['content-type'] ?? '');\n\treturn check.statusCode === 200 && type.startsWith('image/jpeg');\n});\n\nreturn working.slice(0, limit).map((post) => ({ json: post.json }));"
 			},
-			"id": "f3cd1082-b5ab-448d-a720-70d634a8f583",
+			"id": "3804785d-e090-4d61-b91e-4cb90036ffb8",
 			"name": "Choose story to export",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -278,9 +284,10 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// One opaque folder per post with neutral filenames (needs fs — start n8n with pnpm dev:up).\nconst fs = require('fs');\n\nconst post = $json;\nconst settings = $('Settings').first().json;\nlet folder = String(settings.downloadsFolder || '').trim();\nif (!folder) folder = '/Users/figueroaf/.n8n-files';\nif (folder.startsWith('~/')) {\n\tthrow new Error(\n\t\t'Set a full path in Settings → downloadsFolder (example: /Users/you/Downloads). Tilde (~) is not supported.',\n\t);\n}\nfolder = folder.replace(/\\/$/, '');\n\nconst id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;\nconst postDir = `${folder}/${id}`;\nfs.mkdirSync(postDir, { recursive: true });\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\t...post,\n\t\t\tdownloadsFolder: folder,\n\t\t\texportDir: postDir,\n\t\t\texportId: id,\n\t\t\tfileBase: postDir,\n\t\t\timagePath: `${postDir}/cover.jpg`,\n\t\t\tcaptionPath: `${postDir}/note.txt`,\n\t\t\tmetaPath: `${postDir}/data.json`,\n\t\t},\n\t},\n];"
+				"jsCode": "// One opaque folder per post with neutral filenames (needs fs — start n8n with pnpm dev:up).\n// This node runs once for each story, so each story gets its own folder.\nconst fs = require('fs');\n\nconst post = $json;\nconst settings = $('Settings').first().json;\nlet folder = String(settings.downloadsFolder || '').trim();\nif (!folder) folder = '/Users/figueroaf/.n8n-files';\nif (folder.startsWith('~/')) {\n\tthrow new Error(\n\t\t'Set a full path in Settings → downloadsFolder (example: /Users/you/Downloads). Tilde (~) is not supported.',\n\t);\n}\nfolder = folder.replace(/\\/$/, '');\n\nconst id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;\nconst postDir = `${folder}/${id}`;\nfs.mkdirSync(postDir, { recursive: true });\n\nreturn {\n\tjson: {\n\t\t...post,\n\t\tdownloadsFolder: folder,\n\t\texportDir: postDir,\n\t\texportId: id,\n\t\tfileBase: postDir,\n\t\timagePath: `${postDir}/cover.jpg`,\n\t\tcaptionPath: `${postDir}/note.txt`,\n\t\tmetaPath: `${postDir}/data.json`,\n\t},\n};\n",
+				"mode": "runOnceForEachItem"
 			},
-			"id": "4dc00dc5-78a5-4513-9051-ee78b89d1514",
+			"id": "d6b51472-9678-41b8-8a38-90fc1fecc001",
 			"name": "Prepare export paths",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -291,9 +298,10 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Build the Ollama request for the chosen story only, so each run makes one AI call.\nconst settings = $('Settings').first().json;\nconst post = $json;\n\nconst system = `You write Instagram captions for a UFC news page. Fight fans read them on their phones.\n\nWrite like a fan who knows the sport: direct, clear, and natural. Use only the facts in the article text. Never add records, dates, quotes, results, or opinions that are not in the article text. If the article text is thin, write less.\n\nAnswer with JSON that has these fields:\n- \"hook\": one sentence of 8 to 16 words that says what happened. Use your own words. It is not a question and it is not clickbait.\n- \"body\": 2 or 3 sentences, 40 to 70 words in total. Give the key details and what comes next. Do not repeat the hook.\n- \"question\": one short question that asks fans what they think about this story.\n- \"fighters\": the full names of the fighters in the headline, 3 at most.\n\nRules for the text: no hashtags, no emojis, no links, no outlet or author names, no dates of publication. Do not start with \"In a\", \"Breaking\", or \"It's official\". Use contractions.`;\n\nconst user = `Headline: ${post.title}\n\nArticle text:\n${post.storyFacts || post.title}`;\n\nconst ollamaRequest = {\n\tmodel: String(settings.ollamaModel || 'llama3.2'),\n\tstream: false,\n\tmessages: [\n\t\t{ role: 'system', content: system },\n\t\t{ role: 'user', content: user },\n\t],\n\t// A JSON schema keeps a small local model from adding a preamble or markdown.\n\tformat: {\n\t\ttype: 'object',\n\t\tproperties: {\n\t\t\thook: { type: 'string' },\n\t\t\tbody: { type: 'string' },\n\t\t\tquestion: { type: 'string' },\n\t\t\tfighters: { type: 'array', items: { type: 'string' } },\n\t\t},\n\t\trequired: ['hook', 'body', 'question', 'fighters'],\n\t},\n\t// A low temperature keeps the text close to the article.\n\toptions: { temperature: 0.3, top_p: 0.9, num_predict: 400, num_ctx: 4096 },\n};\n\nreturn [{ json: { ...post, ollamaRequest } }];\n"
+				"jsCode": "// Build the Ollama request for one exported story. This node runs once for each story.\nconst settings = $('Settings').first().json;\nconst post = $json;\nconst headline = String(post.captionHeadline ?? post.title ?? '').trim();\nconst articleText = String(post.captionFacts ?? post.storyFacts ?? post.title ?? '').trim();\n\nconst system = `You write Instagram captions for a UFC news page. Fight fans read them on their phones.\n\nWrite like a fan who knows the sport: direct, clear, and natural. Use only the facts in the article text. Never add records, dates, quotes, results, or opinions that are not in the article text. If the article text is thin, write less.\n\nAnswer with JSON that has these fields:\n- \"hook\": one sentence of 8 to 16 words that says what happened. Use your own words. It is not a question and it is not clickbait.\n- \"body\": 2 or 3 sentences, 40 to 70 words in total. Give the key details and what comes next. Do not repeat the hook.\n- \"question\": one short question that asks fans what they think about this story.\n- \"fighters\": the full names of the fighters in the headline, 3 at most.\n\nRules for the text: no hashtags, no emojis, no links, no outlet or author names, no dates of publication. Do not start with \"In a\", \"Breaking\", or \"It's official\". Use contractions.`;\n\nconst user = `Headline: ${headline}\n\nArticle text:\n${articleText}`;\n\nconst ollamaRequest = {\n\tmodel: String(settings.ollamaModel || 'llama3.2'),\n\tstream: false,\n\tmessages: [\n\t\t{ role: 'system', content: system },\n\t\t{ role: 'user', content: user },\n\t],\n\t// A JSON schema keeps a small local model from adding a preamble or markdown.\n\tformat: {\n\t\ttype: 'object',\n\t\tproperties: {\n\t\t\thook: { type: 'string' },\n\t\t\tbody: { type: 'string' },\n\t\t\tquestion: { type: 'string' },\n\t\t\tfighters: { type: 'array', items: { type: 'string' } },\n\t\t},\n\t\trequired: ['hook', 'body', 'question', 'fighters'],\n\t},\n\t// A low temperature keeps the text close to the article.\n\toptions: { temperature: 0.3, top_p: 0.9, num_predict: 400, num_ctx: 4096 },\n};\n\nreturn { json: { ...post, ollamaRequest } };\n",
+				"mode": "runOnceForEachItem"
 			},
-			"id": "13510f25-c721-4e0e-8528-ec73fa1cf7fe",
+			"id": "063dfee4-73c4-4061-8431-72430d993701",
 			"name": "Build caption prompt",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -318,7 +326,7 @@
 					"timeout": 180000
 				}
 			},
-			"id": "a072b182-2ab4-4624-b904-1efb532b1206",
+			"id": "10226336-6fa8-4f1c-9f25-996e200694ae",
 			"name": "Ask Ollama for caption",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
@@ -330,9 +338,10 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Clean the Ollama answer and assemble the caption. Use the backup caption when Ollama gave nothing usable.\nconst settings = $('Settings').first().json;\nconst { ollamaRequest, ...post } = $('Build caption prompt').first().json;\nconst reply = $input.first().json ?? {};\n\nconst tidy = (value) =>\n\tString(value ?? '')\n\t\t.replace(/https?:\\/\\/\\S+/g, ' ')\n\t\t.replace(/#[\\p{L}\\p{N}_]+/gu, ' ')\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/[*_`]+/g, '')\n\t\t.replace(/\\s+([,.;:!?])/g, '$1')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim()\n\t\t.replace(/^[\"“”']+|[\"“”']+$/g, '')\n\t\t.trim();\n\nconst plain = (text) =>\n\tString(text)\n\t\t.normalize('NFD')\n\t\t.replace(/[\\u0300-\\u036f]/g, '')\n\t\t.toLowerCase();\n\n// A small local model sometimes adds claims that the article does not make. Keep a sentence only\n// when most of its words, and all of its numbers and names, come from the article.\nconst article = plain(`${post.title} ${post.storyFacts ?? ''}`);\nconst COMMON_WORDS = new Set(\n\t`about after again also always been before being both could does doing down each even ever every\n\tfans from have having here into just know like make many more most much must need next only other\n\tover really said same says should some still such sure take than that their them then there these\n\tthey thing think this those very want what when where which while will with would your`.split(/\\s+/),\n);\nconst stems = (text) =>\n\t(plain(text).match(/[a-z0-9]+/g) ?? [])\n\t\t.filter((word) => word.length > 3 && !COMMON_WORDS.has(word))\n\t\t.map((word) => word.slice(0, 5));\nconst articleStems = new Set(stems(article));\n\nfunction fromArticle(sentence, minShare) {\n\tconst numbers = sentence.match(/\\d[\\d,.:-]*\\d|\\d/g) ?? [];\n\tif (numbers.some((number) => !article.includes(number))) return false;\n\t// A capital letter after the first word marks a name.\n\tconst names = sentence.split(/\\s+/).slice(1).filter((word) => /^[A-Z][a-z]{2,}/.test(word));\n\tif (names.some((name) => !article.includes(plain(name.replace(/[^\\p{L}].*$/u, ''))))) return false;\n\tconst words = stems(sentence);\n\tif (words.length === 0) return true;\n\treturn words.filter((word) => articleStems.has(word)).length / words.length >= minShare;\n}\n\nconst splitSentences = (text) => text.split(/(?<=[.!?][\"”’)]?)\\s+/).filter(Boolean);\n\nfunction readAnswer() {\n\tif (reply.error) {\n\t\tconst detail = typeof reply.error === 'string' ? reply.error : reply.error.message;\n\t\tthrow new Error(detail || 'Ollama request failed');\n\t}\n\tconst content = reply.message?.content ?? reply.response;\n\tif (!content) throw new Error('Ollama returned no text');\n\tconst answer = typeof content === 'string' ? JSON.parse(content) : content;\n\n\tconst hook = tidy(answer.hook);\n\tconst question = tidy(answer.question);\n\tconst body = splitSentences(tidy(answer.body))\n\t\t.map((sentence) => sentence.trim())\n\t\t.filter((sentence) => !sentence.endsWith('?') && fromArticle(sentence, 0.6))\n\t\t.join(' ');\n\tif (body.length < 80 || body.length > 900) {\n\t\tthrow new Error('Ollama text did not match the article closely enough');\n\t}\n\n\tconst hookFits = hook.length >= 15 && hook.length <= 200 && fromArticle(hook, 0.6);\n\tconst questionFits =\n\t\tquestion.endsWith('?') && question.length >= 15 && question.length <= 180 && fromArticle(question, 0.4);\n\n\treturn {\n\t\thook: hookFits ? hook.replace(/([^.!?])$/, '$1.') : post.title,\n\t\tbody,\n\t\tquestion: questionFits ? question : '',\n\t\tfighters: Array.isArray(answer.fighters) ? answer.fighters : [],\n\t};\n}\n\n// Keep a name tag only when the article really names that person. Names in the headline come\n// first. When the headline has no name, one name from the article is enough.\nfunction nameTags(fighters) {\n\tconst headline = plain(post.title);\n\tconst inHeadline = [];\n\tconst inArticle = [];\n\tfor (const fighter of fighters) {\n\t\tconst name = tidy(fighter);\n\t\tconst words = name.split(' ');\n\t\tif (words.length < 2 || words.length > 4 || !article.includes(plain(name))) continue;\n\t\tconst tag = `#${plain(name).replace(/[^a-z0-9]/g, '')}`;\n\t\tconst list = headline.includes(plain(name)) ? inHeadline : inArticle;\n\t\tif (tag.length > 3 && !list.includes(tag)) list.push(tag);\n\t}\n\treturn inHeadline.length > 0 ? inHeadline.slice(0, 3) : inArticle.slice(0, 1);\n}\n\nfunction eventTags() {\n\tconst tags = [];\n\tconst numbered = post.title.match(/\\bUFC\\s?(\\d{3})\\b/i);\n\tif (numbered) tags.push(`#ufc${numbered[1]}`);\n\tif (/\\bUFC Fight Night\\b/i.test(post.title)) tags.push('#ufcfightnight');\n\treturn tags;\n}\n\n// Closes the caption when the model gave no usable question.\nconst OPEN_QUESTION = 'What’s your take? Tell us in the comments.';\n\nlet parts;\nlet captionSource = 'ollama';\nlet captionError;\nlet extraTags = eventTags();\n\ntry {\n\tconst answer = readAnswer();\n\tparts = [answer.hook, answer.body, answer.question || OPEN_QUESTION];\n\textraTags = [...nameTags(answer.fighters), ...extraTags];\n} catch (error) {\n\t// The export continues with the backup text. data.json records why.\n\tparts = [post.captionBody || post.title, OPEN_QUESTION];\n\tcaptionSource = 'backup';\n\tcaptionError = error.message;\n}\n\nconst baseTags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t.toLowerCase()\n\t.split(/\\s+/)\n\t.filter(Boolean);\nconst hashtags = [...new Set([...baseTags, ...extraTags])].slice(0, 30).join(' ');\n\nconst credit = [`Source: ${post.source}`];\nif (settings.includeLinkInCaption) credit.push(`Full story: ${post.link}`);\n\nconst caption = [...parts, credit.join('\\n'), hashtags].join('\\n\\n');\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\t...post,\n\t\t\tcaption,\n\t\t\tcaptionSource,\n\t\t\t...(captionError ? { captionError } : {}),\n\t\t},\n\t},\n];\n"
+				"jsCode": "// Clean the Ollama answer and assemble the caption. Use the backup caption when Ollama gave nothing usable.\nconst settings = $('Settings').first().json;\nconst { ollamaRequest, ...post } = $('Build caption prompt').item.json;\nconst reply = $input.item.json ?? {};\n\nconst headline = String(post.captionHeadline ?? post.title ?? '').trim();\nconst articleText = String(post.captionFacts ?? post.storyFacts ?? '').trim();\nconst outlet = String(post.captionSource ?? post.source ?? 'UFC News').trim();\nconst storyLink = String(post.captionLink ?? post.link ?? '').trim();\n\nconst tidy = (value) =>\n\tString(value ?? '')\n\t\t.replace(/https?:\\/\\/\\S+/g, ' ')\n\t\t.replace(/#[\\p{L}\\p{N}_]+/gu, ' ')\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/[*_`]+/g, '')\n\t\t.replace(/\\s+([,.;:!?])/g, '$1')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim()\n\t\t.replace(/^[\"“”']+|[\"“”']+$/g, '')\n\t\t.trim();\n\nconst plain = (text) =>\n\tString(text)\n\t\t.normalize('NFD')\n\t\t.replace(/[\\u0300-\\u036f]/g, '')\n\t\t.toLowerCase();\n\n// A small local model sometimes adds claims that the article does not make. Keep a sentence only\n// when most of its words, and all of its numbers and names, come from the article.\nconst article = plain(`${headline} ${articleText}`);\nconst COMMON_WORDS = new Set(\n\t`about after again also always been before being both could does doing down each even ever every\n\tfans from have having here into just know like make many more most much must need next only other\n\tover really said same says should some still such sure take than that their them then there these\n\tthey thing think this those very want what when where which while will with would your`.split(/\\s+/),\n);\nconst stems = (text) =>\n\t(plain(text).match(/[a-z0-9]+/g) ?? [])\n\t\t.filter((word) => word.length > 3 && !COMMON_WORDS.has(word))\n\t\t.map((word) => word.slice(0, 5));\nconst articleStems = new Set(stems(article));\n\nfunction fromArticle(sentence, minShare) {\n\tconst numbers = sentence.match(/\\d[\\d,.:-]*\\d|\\d/g) ?? [];\n\tif (numbers.some((number) => !article.includes(number))) return false;\n\t// A capital letter after the first word marks a name.\n\tconst names = sentence.split(/\\s+/).slice(1).filter((word) => /^[A-Z][a-z]{2,}/.test(word));\n\tif (names.some((name) => !article.includes(plain(name.replace(/[^\\p{L}].*$/u, ''))))) return false;\n\tconst words = stems(sentence);\n\tif (words.length === 0) return true;\n\treturn words.filter((word) => articleStems.has(word)).length / words.length >= minShare;\n}\n\nconst splitSentences = (text) => text.split(/(?<=[.!?][\"”’)]?)\\s+/).filter(Boolean);\n\nfunction readAnswer() {\n\tif (reply.error) {\n\t\tconst detail = typeof reply.error === 'string' ? reply.error : reply.error.message;\n\t\tthrow new Error(detail || 'Ollama request failed');\n\t}\n\tconst content = reply.message?.content ?? reply.response;\n\tif (!content) throw new Error('Ollama returned no text');\n\tconst answer = typeof content === 'string' ? JSON.parse(content) : content;\n\n\tconst hook = tidy(answer.hook);\n\tconst question = tidy(answer.question);\n\tconst body = splitSentences(tidy(answer.body))\n\t\t.map((sentence) => sentence.trim())\n\t\t.filter((sentence) => !sentence.endsWith('?') && fromArticle(sentence, 0.6))\n\t\t.join(' ');\n\tif (body.length < 80 || body.length > 900) {\n\t\tthrow new Error('Ollama text did not match the article closely enough');\n\t}\n\n\tconst hookFits = hook.length >= 15 && hook.length <= 200 && fromArticle(hook, 0.6);\n\tconst questionFits =\n\t\tquestion.endsWith('?') && question.length >= 15 && question.length <= 180 && fromArticle(question, 0.4);\n\n\treturn {\n\t\thook: hookFits ? hook.replace(/([^.!?])$/, '$1.') : headline,\n\t\tbody,\n\t\tquestion: questionFits ? question : '',\n\t\tfighters: Array.isArray(answer.fighters) ? answer.fighters : [],\n\t};\n}\n\n// Keep a name tag only when the article really names that person. Names in the headline come\n// first. When the headline has no name, one name from the article is enough.\nfunction nameTags(fighters) {\n\tconst headlinePlain = plain(headline);\n\tconst inHeadline = [];\n\tconst inArticle = [];\n\tfor (const fighter of fighters) {\n\t\tconst name = tidy(fighter);\n\t\tconst words = name.split(' ');\n\t\tif (words.length < 2 || words.length > 4 || !article.includes(plain(name))) continue;\n\t\tconst tag = `#${plain(name).replace(/[^a-z0-9]/g, '')}`;\n\t\tconst list = headlinePlain.includes(plain(name)) ? inHeadline : inArticle;\n\t\tif (tag.length > 3 && !list.includes(tag)) list.push(tag);\n\t}\n\treturn inHeadline.length > 0 ? inHeadline.slice(0, 3) : inArticle.slice(0, 1);\n}\n\nfunction eventTags() {\n\tconst tags = [];\n\tconst numbered = headline.match(/\\bUFC\\s?(\\d{3})\\b/i);\n\tif (numbered) tags.push(`#ufc${numbered[1]}`);\n\tif (/\\bUFC Fight Night\\b/i.test(headline)) tags.push('#ufcfightnight');\n\treturn tags;\n}\n\n// Closes the caption when the model gave no usable question.\nconst OPEN_QUESTION = 'What’s your take? Tell us in the comments.';\n\nlet parts;\nlet captionSource = 'ollama';\nlet captionError;\nlet extraTags = eventTags();\n\ntry {\n\tconst answer = readAnswer();\n\tparts = [answer.hook, answer.body, answer.question || OPEN_QUESTION];\n\textraTags = [...nameTags(answer.fighters), ...extraTags];\n} catch (error) {\n\t// The export continues with the backup text. data.json records why.\n\tparts = [post.captionBody || headline, OPEN_QUESTION];\n\tcaptionSource = 'backup';\n\tcaptionError = error.message;\n}\n\n// Instagram allows at most five hashtags per post.\nconst MAX_HASHTAGS = 5;\nconst baseTags = String(settings.hashtags || '#ufc #mma #ufcnews #mixedmartialarts #fightnews')\n\t.toLowerCase()\n\t.split(/\\s+/)\n\t.filter(Boolean);\nconst hashtags = [...new Set([...baseTags, ...extraTags])].slice(0, MAX_HASHTAGS).join(' ');\n\nconst credit = [`Source: ${outlet}`];\nif (settings.includeLinkInCaption && storyLink) credit.push(`Full story: ${storyLink}`);\n\nconst caption = [...parts, credit.join('\\n'), hashtags].join('\\n\\n');\n\nreturn {\n\tjson: {\n\t\t...post,\n\t\tcaption,\n\t\tcaptionSource,\n\t\t...(captionError ? { captionError } : {}),\n\t},\n};\n",
+				"mode": "runOnceForEachItem"
 			},
-			"id": "ffc6a361-3812-4320-8a6b-23800190ce3a",
+			"id": "2a54dd82-3d6f-4742-8e56-355d8434e0f7",
 			"name": "Finish caption",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -354,7 +363,7 @@
 					"timeout": 60000
 				}
 			},
-			"id": "72e9cd5f-e0e6-497c-8654-0cdd92ddc883",
+			"id": "286241f1-d5b1-4783-87a0-5edb6177d591",
 			"name": "Download backdrop",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
@@ -365,7 +374,7 @@
 		},
 		{
 			"parameters": {
-				"url": "={{ $('Finish caption').first().json.photoUrl }}",
+				"url": "={{ $json.photoUrl }}",
 				"options": {
 					"response": {
 						"response": {
@@ -376,7 +385,7 @@
 					"timeout": 60000
 				}
 			},
-			"id": "5356a666-5e45-4dc2-b9aa-46d4c1d2a70f",
+			"id": "2bd71a34-4d7f-4541-90f8-ddbbf64b0504",
 			"name": "Download photo",
 			"type": "n8n-nodes-base.httpRequest",
 			"typeVersion": 4.2,
@@ -390,7 +399,7 @@
 				"operation": "information",
 				"dataPropertyName": "photo"
 			},
-			"id": "279c9a54-74b6-4133-a36d-cb6c3f02c23b",
+			"id": "8e7d554e-4dea-465a-957e-64498bdb3a84",
 			"name": "Read photo size",
 			"type": "n8n-nodes-base.editImage",
 			"typeVersion": 2,
@@ -401,9 +410,10 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Plan where each part of the story image goes. The Edit Image nodes after this node read `layout`.\nconst settings = $('Settings').first().json;\nconst post = $('Finish caption').first().json;\nconst item = $input.first();\n\nif (!item.binary?.data || !item.binary?.photo) {\n\tthrow new Error(`Image download failed for \"${post.title}\". Check photoUrl and backdropUrl in data.`);\n}\n\nconst W = Math.round(Number(settings.imageWidth) || 1080);\nconst H = Math.round(Number(settings.imageHeight) || 1920);\nconst u = W / 1080;\nconst px = (value) => Math.round(value * u);\n\n// Impact advance widths in thousandths of the font size. Another headline font uses them as an estimate.\nconst GLYPH_WIDTHS = {\n\t168: ',‘’',\n\t176: ' ',\n\t185: \"'.\",\n\t202: ':;',\n\t270: '!',\n\t288: 'IÍ',\n\t294: '-',\n\t313: '()',\n\t331: 'J',\n\t345: '“”',\n\t370: '\"',\n\t380: 'L',\n\t381: '1',\n\t392: '7',\n\t396: '/',\n\t397: 'ZŽ',\n\t398: 'F',\n\t416: 'EÈÉÊË',\n\t461: 'T',\n\t473: 'Y',\n\t482: 'X',\n\t500: '4–',\n\t502: '2P',\n\t508: 'AÀÁÂÃÄÅ',\n\t517: 'SŠ',\n\t523: 'V',\n\t525: '?',\n\t530: '3',\n\t533: '+',\n\t535: '8',\n\t536: '0',\n\t537: '5K',\n\t539: 'R',\n\t542: '69NÑ',\n\t546: 'OQÓÔÕÖØ',\n\t547: '$UÚÜ',\n\t551: 'G',\n\t552: 'B',\n\t553: 'D…',\n\t554: 'CÇĆČ',\n\t555: 'H',\n\t576: '&',\n\t626: '#',\n\t693: '%',\n\t717: 'M',\n\t814: 'W',\n\t1000: '—',\n};\nconst CAP_HEIGHT = 0.797;\nconst glyphWidth = new Map();\nfor (const [width, glyphs] of Object.entries(GLYPH_WIDTHS)) {\n\tfor (const glyph of glyphs) glyphWidth.set(glyph, Number(width));\n}\nconst textWidth = (text, size) =>\n\t([...text].reduce((sum, glyph) => sum + (glyphWidth.get(glyph) ?? 560), 0) * size) / 1000;\n\nfunction wrap(text, size, maxWidth) {\n\tconst lines = [];\n\tlet line = '';\n\tfor (const word of text.split(' ')) {\n\t\tconst next = line ? `${line} ${word}` : word;\n\t\tif (line && textWidth(next, size) > maxWidth) {\n\t\t\tlines.push(line);\n\t\t\tline = word;\n\t\t} else {\n\t\t\tline = next;\n\t\t}\n\t}\n\tif (line) lines.push(line);\n\treturn lines;\n}\n\n// Narrow the lines while the line count stays the same, so the last line is not one lonely word.\nfunction balance(text, size, maxWidth) {\n\tlet best = wrap(text, size, maxWidth);\n\tfor (let width = maxWidth - 12; width > maxWidth / 2; width -= 12) {\n\t\tconst lines = wrap(text, size, width);\n\t\tif (lines.length !== best.length) break;\n\t\tbest = lines;\n\t}\n\treturn best;\n}\n\nconst display = (text) =>\n\tString(text ?? '')\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim()\n\t\t.toUpperCase();\n\nconst margin = px(64);\nconst textWidthMax = W - margin * 2;\nconst headlineText = display(post.title);\n\n// Phone apps cover the top and the bottom of a tall image, so the content stays between them.\nconst tall = H / W > 1.6;\nconst safeTop = Math.round(H * (tall ? 0.13 : 0.045));\nconst safeBottom = Math.round(H * (tall ? 0.17 : 0.045));\nconst zone = H - safeTop - safeBottom;\n\nconst logoSize = Math.round((W * Number(settings.logoMarkScale || 12)) / 100);\nconst labelSize = px(38);\nconst pillHeight = px(62);\nconst barHeight = px(10);\nconst gapHeader = px(28);\nconst gapPhoto = px(48);\nconst gapPill = px(40);\nconst fixedHeight = logoSize + gapHeader + barHeight + gapPhoto + pillHeight + gapPill;\n\nconst sourceWidth = Number(item.json?.size?.width) || W;\nconst sourceHeight = Number(item.json?.size?.height) || Math.round(W * 0.5625);\nconst naturalHeight = Math.round((sourceHeight * W) / sourceWidth);\n// A wide photo stays whole. A tall photo is cut to this height when the headline needs the room.\nconst photoKeep = Math.min(naturalHeight, Math.round(W * 0.62));\nconst photoFloor = Math.min(naturalHeight, px(400));\n\nconst MAX_LINES = 5;\nlet headline;\nfor (let size = 96; size >= 60; size -= 4) {\n\tconst fontSize = px(size);\n\tconst lines = wrap(headlineText, fontSize, textWidthMax);\n\tconst leading = Math.round(fontSize * 1.14);\n\tconst blockHeight = Math.round(fontSize * CAP_HEIGHT) + (lines.length - 1) * leading;\n\tconst photoRoom = zone - fixedHeight - blockHeight;\n\theadline = { fontSize, lines, leading, blockHeight, photoRoom };\n\tif (lines.length <= 4 && photoRoom >= photoKeep) break;\n}\nif (headline.lines.length > MAX_LINES) {\n\tconst kept = headline.lines.slice(0, MAX_LINES);\n\tlet last = kept[MAX_LINES - 1];\n\twhile (last.includes(' ') && textWidth(`${last}…`, headline.fontSize) > textWidthMax) {\n\t\tlast = last.slice(0, last.lastIndexOf(' '));\n\t}\n\tkept[MAX_LINES - 1] = `${last}…`;\n\theadline.lines = kept;\n\theadline.blockHeight =\n\t\tMath.round(headline.fontSize * CAP_HEIGHT) + (MAX_LINES - 1) * headline.leading;\n\theadline.photoRoom = zone - fixedHeight - headline.blockHeight;\n} else {\n\theadline.lines = balance(headlineText, headline.fontSize, textWidthMax);\n}\n\nconst photoHeight = Math.max(photoFloor, Math.min(naturalHeight, headline.photoRoom));\nconst stackHeight = fixedHeight + photoHeight + headline.blockHeight;\nconst top = Math.max(px(40), safeTop + Math.round((zone - stackHeight) / 2));\n\nconst logoY = top;\nconst photoY = logoY + logoSize + gapHeader;\nconst barY = photoY + photoHeight;\nconst pillY = barY + barHeight + gapPhoto;\nconst headlineY = pillY + pillHeight + gapPill + Math.round(headline.fontSize * CAP_HEIGHT);\n\nconst label = display(settings.postLabel || 'UFC NEWS');\nconst pillPad = px(22);\nconst pillWidth = Math.round(textWidth(label, labelSize)) + pillPad * 2;\n\nconst layout = {\n\twidth: W,\n\theight: H,\n\tlogo: {\n\t\tsize: logoSize,\n\t\t// The logo file has an empty border. Shift it so the mark lines up with the text.\n\t\tx: margin - Math.round(logoSize * 0.1),\n\t\ty: logoY,\n\t},\n\tsource: {\n\t\ttext: `VIA ${display(post.source)}`,\n\t\tfontSize: px(30),\n\t\tright: margin,\n\t\ty: logoY + Math.round(logoSize / 2) + px(11),\n\t},\n\tphoto: {\n\t\ty: photoY,\n\t\twidth: W,\n\t\theight: photoHeight,\n\t\tfullHeight: naturalHeight,\n\t\t// Cut more from the bottom than from the top, because faces are near the top.\n\t\tcropY: Math.round((naturalHeight - photoHeight) * 0.25),\n\t},\n\tbar: { y1: barY, y2: barY + barHeight },\n\tpill: {\n\t\tx1: margin,\n\t\ty1: pillY,\n\t\tx2: margin + pillWidth,\n\t\ty2: pillY + pillHeight,\n\t\tradius: px(8),\n\t\ttext: label,\n\t\tfontSize: labelSize,\n\t\ttextX: margin + pillPad,\n\t\ttextY: pillY + Math.round((pillHeight + labelSize * CAP_HEIGHT) / 2),\n\t},\n\theadline: {\n\t\tfontSize: headline.fontSize,\n\t\tx: margin,\n\t\tlines: Array.from({ length: MAX_LINES }, (_, i) => headline.lines[i] ?? ''),\n\t\ty: Array.from({ length: MAX_LINES }, (_, i) => headlineY + i * headline.leading),\n\t},\n};\n\nreturn [{ json: { ...post, layout }, binary: item.binary }];\n"
+				"jsCode": "// Plan where each part of the story image goes. The Edit Image nodes after this node read `layout`.\nconst settings = $('Settings').first().json;\nconst post = $('Finish caption').item.json;\nconst item = $input.item;\n\nif (!item.binary?.data || !item.binary?.photo) {\n\tthrow new Error(`Image download failed for \"${post.title}\". Check photoUrl and backdropUrl in data.`);\n}\n\nconst W = Math.round(Number(settings.imageWidth) || 1080);\nconst H = Math.round(Number(settings.imageHeight) || 1920);\nconst u = W / 1080;\nconst px = (value) => Math.round(value * u);\n\n// Impact advance widths in thousandths of the font size. Another headline font uses them as an estimate.\nconst GLYPH_WIDTHS = {\n\t168: ',‘’',\n\t176: ' ',\n\t185: \"'.\",\n\t202: ':;',\n\t270: '!',\n\t288: 'IÍ',\n\t294: '-',\n\t313: '()',\n\t331: 'J',\n\t345: '“”',\n\t370: '\"',\n\t380: 'L',\n\t381: '1',\n\t392: '7',\n\t396: '/',\n\t397: 'ZŽ',\n\t398: 'F',\n\t416: 'EÈÉÊË',\n\t461: 'T',\n\t473: 'Y',\n\t482: 'X',\n\t500: '4–',\n\t502: '2P',\n\t508: 'AÀÁÂÃÄÅ',\n\t517: 'SŠ',\n\t523: 'V',\n\t525: '?',\n\t530: '3',\n\t533: '+',\n\t535: '8',\n\t536: '0',\n\t537: '5K',\n\t539: 'R',\n\t542: '69NÑ',\n\t546: 'OQÓÔÕÖØ',\n\t547: '$UÚÜ',\n\t551: 'G',\n\t552: 'B',\n\t553: 'D…',\n\t554: 'CÇĆČ',\n\t555: 'H',\n\t576: '&',\n\t626: '#',\n\t693: '%',\n\t717: 'M',\n\t814: 'W',\n\t1000: '—',\n};\nconst CAP_HEIGHT = 0.797;\nconst glyphWidth = new Map();\nfor (const [width, glyphs] of Object.entries(GLYPH_WIDTHS)) {\n\tfor (const glyph of glyphs) glyphWidth.set(glyph, Number(width));\n}\nconst textWidth = (text, size) =>\n\t([...text].reduce((sum, glyph) => sum + (glyphWidth.get(glyph) ?? 560), 0) * size) / 1000;\n\nfunction wrap(text, size, maxWidth) {\n\tconst lines = [];\n\tlet line = '';\n\tfor (const word of text.split(' ')) {\n\t\tconst next = line ? `${line} ${word}` : word;\n\t\tif (line && textWidth(next, size) > maxWidth) {\n\t\t\tlines.push(line);\n\t\t\tline = word;\n\t\t} else {\n\t\t\tline = next;\n\t\t}\n\t}\n\tif (line) lines.push(line);\n\treturn lines;\n}\n\n// Narrow the lines while the line count stays the same, so the last line is not one lonely word.\nfunction balance(text, size, maxWidth) {\n\tlet best = wrap(text, size, maxWidth);\n\tfor (let width = maxWidth - 12; width > maxWidth / 2; width -= 12) {\n\t\tconst lines = wrap(text, size, width);\n\t\tif (lines.length !== best.length) break;\n\t\tbest = lines;\n\t}\n\treturn best;\n}\n\nconst display = (text) =>\n\tString(text ?? '')\n\t\t.replace(/[\\p{Extended_Pictographic}\\u{FE0F}\\u{200D}]/gu, ' ')\n\t\t.replace(/\\s+/g, ' ')\n\t\t.trim()\n\t\t.toUpperCase();\n\nconst margin = px(64);\nconst textWidthMax = W - margin * 2;\nconst headlineText = display(post.title);\n\n// Phone apps cover the top and the bottom of a tall image, so the content stays between them.\nconst tall = H / W > 1.6;\nconst safeTop = Math.round(H * (tall ? 0.13 : 0.045));\nconst safeBottom = Math.round(H * (tall ? 0.17 : 0.045));\nconst zone = H - safeTop - safeBottom;\n\nconst logoSize = Math.round((W * Number(settings.logoMarkScale || 12)) / 100);\nconst labelSize = px(38);\nconst pillHeight = px(62);\nconst barHeight = px(10);\nconst gapHeader = px(28);\nconst gapPhoto = px(48);\nconst gapPill = px(40);\nconst fixedHeight = logoSize + gapHeader + barHeight + gapPhoto + pillHeight + gapPill;\n\nconst sourceWidth = Number(item.json?.size?.width) || W;\nconst sourceHeight = Number(item.json?.size?.height) || Math.round(W * 0.5625);\nconst naturalHeight = Math.round((sourceHeight * W) / sourceWidth);\n// A wide photo stays whole. A tall photo is cut to this height when the headline needs the room.\nconst photoKeep = Math.min(naturalHeight, Math.round(W * 0.62));\nconst photoFloor = Math.min(naturalHeight, px(400));\n\nconst MAX_LINES = 5;\nlet headline;\nfor (let size = 96; size >= 60; size -= 4) {\n\tconst fontSize = px(size);\n\tconst lines = wrap(headlineText, fontSize, textWidthMax);\n\tconst leading = Math.round(fontSize * 1.14);\n\tconst blockHeight = Math.round(fontSize * CAP_HEIGHT) + (lines.length - 1) * leading;\n\tconst photoRoom = zone - fixedHeight - blockHeight;\n\theadline = { fontSize, lines, leading, blockHeight, photoRoom };\n\tif (lines.length <= 4 && photoRoom >= photoKeep) break;\n}\nif (headline.lines.length > MAX_LINES) {\n\tconst kept = headline.lines.slice(0, MAX_LINES);\n\tlet last = kept[MAX_LINES - 1];\n\twhile (last.includes(' ') && textWidth(`${last}…`, headline.fontSize) > textWidthMax) {\n\t\tlast = last.slice(0, last.lastIndexOf(' '));\n\t}\n\tkept[MAX_LINES - 1] = `${last}…`;\n\theadline.lines = kept;\n\theadline.blockHeight =\n\t\tMath.round(headline.fontSize * CAP_HEIGHT) + (MAX_LINES - 1) * headline.leading;\n\theadline.photoRoom = zone - fixedHeight - headline.blockHeight;\n} else {\n\theadline.lines = balance(headlineText, headline.fontSize, textWidthMax);\n}\n\nconst photoHeight = Math.max(photoFloor, Math.min(naturalHeight, headline.photoRoom));\nconst stackHeight = fixedHeight + photoHeight + headline.blockHeight;\nconst top = Math.max(px(40), safeTop + Math.round((zone - stackHeight) / 2));\n\nconst logoY = top;\nconst photoY = logoY + logoSize + gapHeader;\nconst barY = photoY + photoHeight;\nconst pillY = barY + barHeight + gapPhoto;\nconst headlineY = pillY + pillHeight + gapPill + Math.round(headline.fontSize * CAP_HEIGHT);\n\nconst label = display(settings.postLabel || 'UFC NEWS');\nconst pillPad = px(22);\nconst pillWidth = Math.round(textWidth(label, labelSize)) + pillPad * 2;\n\nconst layout = {\n\twidth: W,\n\theight: H,\n\tlogo: {\n\t\tsize: logoSize,\n\t\t// The logo file has an empty border. Shift it so the mark lines up with the text.\n\t\tx: margin - Math.round(logoSize * 0.1),\n\t\ty: logoY,\n\t},\n\tsource: {\n\t\ttext: `VIA ${display(post.source)}`,\n\t\tfontSize: px(30),\n\t\tright: margin,\n\t\ty: logoY + Math.round(logoSize / 2) + px(11),\n\t},\n\tphoto: {\n\t\ty: photoY,\n\t\twidth: W,\n\t\theight: photoHeight,\n\t\tfullHeight: naturalHeight,\n\t\t// Cut more from the bottom than from the top, because faces are near the top.\n\t\tcropY: Math.round((naturalHeight - photoHeight) * 0.25),\n\t},\n\tbar: { y1: barY, y2: barY + barHeight },\n\tpill: {\n\t\tx1: margin,\n\t\ty1: pillY,\n\t\tx2: margin + pillWidth,\n\t\ty2: pillY + pillHeight,\n\t\tradius: px(8),\n\t\ttext: label,\n\t\tfontSize: labelSize,\n\t\ttextX: margin + pillPad,\n\t\ttextY: pillY + Math.round((pillHeight + labelSize * CAP_HEIGHT) / 2),\n\t},\n\theadline: {\n\t\tfontSize: headline.fontSize,\n\t\tx: margin,\n\t\tlines: Array.from({ length: MAX_LINES }, (_, i) => headline.lines[i] ?? ''),\n\t\ty: Array.from({ length: MAX_LINES }, (_, i) => headlineY + i * headline.leading),\n\t},\n};\n\nreturn { json: { ...post, layout }, binary: item.binary };\n",
+				"mode": "runOnceForEachItem"
 			},
-			"id": "5650052f-5859-4e83-b89b-d6c4f0f6345c",
+			"id": "b384e9ac-b7a6-4e3d-a7ff-bc775e50a6fd",
 			"name": "Plan story layout",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -415,9 +425,9 @@
 		{
 			"parameters": {
 				"mode": "runOnceForAllItems",
-				"jsCode": "// Local dev only: read logo from disk with fallback (needs NODE_FUNCTION_ALLOW_BUILTIN=fs).\nconst fs = require('fs');\n\nconst prep = $input.first();\nconst settings = $('Settings').first().json;\n\nconst repoLogo =\n\t'/Users/figueroaf/Desktop/Projects/Automated-Insta-Posts/workflows/assets/fw-logo-black-bg.png';\nconst homeLogo = '/Users/figueroaf/.n8n-files/fw-logo-black-bg.png';\n\nconst primary = String(settings.logoFilePath || '').trim() || homeLogo;\nconst backup = primary === homeLogo ? repoLogo : homeLogo;\n\nlet logoPath;\nif (fs.existsSync(primary)) {\n\tlogoPath = primary;\n} else if (fs.existsSync(backup)) {\n\tlogoPath = backup;\n} else {\n\tthrow new Error(`Logo not found. Checked:\\n${primary}\\n${backup}\\nRun pnpm dev:up to copy the logo.`);\n}\n\nconst logoBuffer = fs.readFileSync(logoPath);\n\nreturn [\n\t{\n\t\tjson: { ...prep.json, logoUsedPath: logoPath },\n\t\tbinary: {\n\t\t\t...prep.binary,\n\t\t\tlogo: {\n\t\t\t\tdata: logoBuffer.toString('base64'),\n\t\t\t\tmimeType: 'image/png',\n\t\t\t\tfileName: 'fw-logo-black-bg.png',\n\t\t\t\tfileExtension: 'png',\n\t\t\t},\n\t\t},\n\t},\n];\n"
+				"jsCode": "// Local dev only: read logo once, attach to every story item (needs NODE_FUNCTION_ALLOW_BUILTIN=fs).\nconst fs = require('fs');\n\nconst settings = $('Settings').first().json;\n\nconst repoLogo =\n\t'/Users/figueroaf/Desktop/Projects/Automated-Insta-Posts/workflows/assets/fw-logo-black-bg.png';\nconst homeLogo = '/Users/figueroaf/.n8n-files/fw-logo-black-bg.png';\n\nconst primary = String(settings.logoFilePath || '').trim() || homeLogo;\nconst backup = primary === homeLogo ? repoLogo : homeLogo;\n\nlet logoPath;\nif (fs.existsSync(primary)) {\n\tlogoPath = primary;\n} else if (fs.existsSync(backup)) {\n\tlogoPath = backup;\n} else {\n\tthrow new Error(`Logo not found. Checked:\\n${primary}\\n${backup}\\nRun pnpm dev:up to copy the logo.`);\n}\n\nconst logoBuffer = fs.readFileSync(logoPath);\nconst logoBinary = {\n\tdata: logoBuffer.toString('base64'),\n\tmimeType: 'image/png',\n\tfileName: 'fw-logo-black-bg.png',\n\tfileExtension: 'png',\n};\n\nreturn $input.all().map((prep) => ({\n\tjson: { ...prep.json, logoUsedPath: logoPath },\n\tbinary: {\n\t\t...prep.binary,\n\t\tlogo: logoBinary,\n\t},\n}));"
 			},
-			"id": "57866a39-22e3-4fa2-862e-0703d3853c13",
+			"id": "4f7c158b-90ed-451a-bb66-770f95c6fbd5",
 			"name": "Load logo",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -451,7 +461,7 @@
 					"format": "png"
 				}
 			},
-			"id": "aa154ab1-6cd1-4a55-b32f-6af5ee1a3daf",
+			"id": "00741e9b-d01a-415c-8eff-4dd8939312ce",
 			"name": "Fit photo",
 			"type": "n8n-nodes-base.editImage",
 			"typeVersion": 2,
@@ -471,7 +481,7 @@
 					"destinationKey": "logo"
 				}
 			},
-			"id": "be24ab82-1afd-48b4-8ea8-42c265b2c2fd",
+			"id": "286a2a33-2130-4047-a5e9-f8bbd37bb912",
 			"name": "Resize logo",
 			"type": "n8n-nodes-base.editImage",
 			"typeVersion": 2,
@@ -622,7 +632,7 @@
 					"fileName": "cover.jpg"
 				}
 			},
-			"id": "6c26013c-98e7-4873-bc46-b49df180c72e",
+			"id": "a7f2d52a-1f74-402b-8d20-aef422021e7b",
 			"name": "Compose story image",
 			"type": "n8n-nodes-base.editImage",
 			"typeVersion": 2,
@@ -638,7 +648,7 @@
 				"dataPropertyName": "data",
 				"options": {}
 			},
-			"id": "8c779b3a-352c-493e-8f7e-f28a5c1db6f7",
+			"id": "0b760b2e-c341-4bcc-a540-d5713b0acff3",
 			"name": "Write post image",
 			"type": "n8n-nodes-base.readWriteFile",
 			"typeVersion": 1.1,
@@ -649,9 +659,10 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Build caption + meta binaries while keeping export paths on json (Convert to File clears json).\nconst post = $json;\nconst caption = String(post.caption ?? '').trim() || '(No caption generated — check Ollama.)';\n\nconst payload = {\n\ttitle: post.title,\n\tlink: post.link,\n\tsource: post.source,\n\tpublishedAt: post.publishedAt,\n\tsourceImage: post.sourceImage,\n\tphotoUrl: post.photoUrl,\n\tbackdropUrl: post.backdropUrl,\n\timageSize: post.layout ? `${post.layout.width}x${post.layout.height}` : undefined,\n\tcaption,\n\tcaptionSource: post.captionSource,\n\tcaptionError: post.captionError,\n\texportDir: post.exportDir,\n\texportId: post.exportId,\n\tsavedImage: post.imagePath,\n\tsavedCaption: post.captionPath,\n\texportedAt: new Date().toISOString(),\n};\nconst metaText = JSON.stringify(payload, null, 2);\n\nconst toBinary = (text, mimeType, fileName) => ({\n\tdata: Buffer.from(text, 'utf8').toString('base64'),\n\tmimeType,\n\tfileName,\n});\n\nreturn [\n\t{\n\t\tjson: { ...post, caption, metaText },\n\t\tbinary: {\n\t\t\tcaptionFile: toBinary(caption, 'text/plain', 'note.txt'),\n\t\t\tmetaFile: toBinary(metaText, 'application/json', 'data.json'),\n\t\t},\n\t},\n];"
+				"jsCode": "// Build caption + meta binaries while keeping export paths on json (Convert to File clears json).\nconst post = $json;\nconst caption = String(post.caption ?? '').trim() || '(No caption generated — check Ollama.)';\n\nconst payload = {\n\ttitle: post.title,\n\tcaptionHeadline: post.captionHeadline,\n\tlink: post.captionLink ?? post.link,\n\tsource: post.captionSource ?? post.source,\n\tpublishedAt: post.publishedAt,\n\tsourceImage: post.sourceImage,\n\tphotoUrl: post.photoUrl,\n\tbackdropUrl: post.backdropUrl,\n\timageSize: post.layout ? `${post.layout.width}x${post.layout.height}` : undefined,\n\tcaption,\n\tstorySource: post.storySource,\n\tcaptionSource: post.captionSource,\n\tcaptionError: post.captionError,\n\texportDir: post.exportDir,\n\texportId: post.exportId,\n\tsavedImage: post.imagePath,\n\tsavedCaption: post.captionPath,\n\texportedAt: new Date().toISOString(),\n};\nconst metaText = JSON.stringify(payload, null, 2);\n\nconst toBinary = (text, mimeType, fileName) => ({\n\tdata: Buffer.from(text, 'utf8').toString('base64'),\n\tmimeType,\n\tfileName,\n});\n\nreturn {\n\tjson: { ...post, caption, metaText },\n\tbinary: {\n\t\tcaptionFile: toBinary(caption, 'text/plain', 'note.txt'),\n\t\tmetaFile: toBinary(metaText, 'application/json', 'data.json'),\n\t},\n};",
+				"mode": "runOnceForEachItem"
 			},
-			"id": "06683548-0f97-4300-88ff-c8558385fcfa",
+			"id": "6ec304e0-e631-4537-8e76-93b947fbe78b",
 			"name": "Finalize export",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,
@@ -667,7 +678,7 @@
 				"dataPropertyName": "captionFile",
 				"options": {}
 			},
-			"id": "379c7ba4-e01f-460e-a48f-eb83a40aae7c",
+			"id": "236c0f0d-aae5-400b-80d3-19da0a1f20c1",
 			"name": "Write caption file",
 			"type": "n8n-nodes-base.readWriteFile",
 			"typeVersion": 1.1,
@@ -683,7 +694,7 @@
 				"dataPropertyName": "metaFile",
 				"options": {}
 			},
-			"id": "0db7a242-99da-444e-9064-40258c5c723c",
+			"id": "7f4c30f2-2160-4331-8267-d412babadd7b",
 			"name": "Write meta file",
 			"type": "n8n-nodes-base.readWriteFile",
 			"typeVersion": 1.1,
@@ -694,9 +705,10 @@
 		},
 		{
 			"parameters": {
-				"jsCode": "// Remember the story so the next run picks a different one.\nconst post = $('Prepare export paths').first().json;\nconst memory = $getWorkflowStaticData('global');\nmemory.postedKeys = [...(memory.postedKeys ?? []), ...post.keys].slice(-2000);\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\texported: true,\n\t\t\texportDir: post.exportDir,\n\t\t\timagePath: post.imagePath,\n\t\t\tcaptionPath: post.captionPath,\n\t\t\tmetaPath: post.metaPath,\n\t\t\ttitle: post.title,\n\t\t\tlink: post.link,\n\t\t\texportedAt: new Date().toISOString(),\n\t\t},\n\t},\n];"
+				"jsCode": "// Remember each exported story so the next run skips them.\nconst post = $json;\nconst memory = $getWorkflowStaticData('global');\nconst keys = Array.isArray(post.keys) ? post.keys : [];\nmemory.postedKeys = [...(memory.postedKeys ?? []), ...keys].slice(-2000);\n\nreturn {\n\tjson: {\n\t\texported: true,\n\t\texportDir: post.exportDir,\n\t\timagePath: post.imagePath,\n\t\tcaptionPath: post.captionPath,\n\t\tmetaPath: post.metaPath,\n\t\ttitle: post.title,\n\t\tlink: post.link,\n\t\texportedAt: new Date().toISOString(),\n\t},\n};",
+				"mode": "runOnceForEachItem"
 			},
-			"id": "bf51ceac-beb1-48a7-82dc-0f8e6f38e81f",
+			"id": "42977d1b-196d-413d-9ef5-44efd93e7468",
 			"name": "Remember exported story",
 			"type": "n8n-nodes-base.code",
 			"typeVersion": 2,

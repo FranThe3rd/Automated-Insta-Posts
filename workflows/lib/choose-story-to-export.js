@@ -1,4 +1,7 @@
-// Pick the newest story whose image is a valid JPEG.
+// Pick up to N newest stories whose image is a valid JPEG (N from Settings → exportsPerRun).
+const settings = $('Settings').first().json;
+const limit = Math.max(1, Math.min(10, Number(settings.exportsPerRun) || 5));
+
 const posts = $('Build Instagram posts').all();
 const checks = $('Check images').all();
 
@@ -8,5 +11,4 @@ const working = posts.filter((post, i) => {
 	return check.statusCode === 200 && type.startsWith('image/jpeg');
 });
 
-const post = working[0];
-return post ? [{ json: post.json }] : [];
+return working.slice(0, limit).map((post) => ({ json: post.json }));

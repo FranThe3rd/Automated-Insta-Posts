@@ -1,7 +1,6 @@
-// Local dev only: read logo from disk with fallback (needs NODE_FUNCTION_ALLOW_BUILTIN=fs).
+// Local dev only: read logo once, attach to every story item (needs NODE_FUNCTION_ALLOW_BUILTIN=fs).
 const fs = require('fs');
 
-const prep = $input.first();
 const settings = $('Settings').first().json;
 
 const repoLogo =
@@ -21,18 +20,17 @@ if (fs.existsSync(primary)) {
 }
 
 const logoBuffer = fs.readFileSync(logoPath);
+const logoBinary = {
+	data: logoBuffer.toString('base64'),
+	mimeType: 'image/png',
+	fileName: 'fw-logo-black-bg.png',
+	fileExtension: 'png',
+};
 
-return [
-	{
-		json: { ...prep.json, logoUsedPath: logoPath },
-		binary: {
-			...prep.binary,
-			logo: {
-				data: logoBuffer.toString('base64'),
-				mimeType: 'image/png',
-				fileName: 'fw-logo-black-bg.png',
-				fileExtension: 'png',
-			},
-		},
+return $input.all().map((prep) => ({
+	json: { ...prep.json, logoUsedPath: logoPath },
+	binary: {
+		...prep.binary,
+		logo: logoBinary,
 	},
-];
+}));

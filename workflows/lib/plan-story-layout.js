@@ -1,7 +1,7 @@
 // Plan where each part of the story image goes. The Edit Image nodes after this node read `layout`.
 const settings = $('Settings').first().json;
-const post = $('Finish caption').first().json;
-const item = $input.first();
+const post = $('Finish caption').item.json;
+const item = $input.item;
 
 if (!item.binary?.data || !item.binary?.photo) {
 	throw new Error(`Image download failed for "${post.title}". Check photoUrl and backdropUrl in data.`);
@@ -213,4 +213,4 @@ const layout = {
 	},
 };
 
-return [{ json: { ...post, layout }, binary: item.binary }];
+return { json: { ...post, layout }, binary: item.binary };

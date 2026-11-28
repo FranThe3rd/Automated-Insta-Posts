@@ -5,7 +5,8 @@ const memory = $getWorkflowStaticData('global');
 const seen = new Set([...(memory.postedKeys ?? []), ...(memory.skippedKeys ?? [])]);
 
 const maxAgeMs = Number(settings.maxStoryAgeHours || 48) * 60 * 60 * 1000;
-const candidateCount = 12;
+// Extra candidates, because some stories have no usable image.
+const candidateCount = Math.max(12, (Number(settings.exportsPerRun) || 5) * 5);
 
 // The Code node sandbox has no URL class, so read the host and path with a pattern.
 const urlParts = (url) => {
@@ -115,4 +116,20 @@ for (const { json: item } of $('Read news feeds').all()) {
 
 stories.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
-return stories.slice(0, candidateCount).map((story) => ({ json: story }));
+// Take the newest story of each outlet in turn, so one busy feed does not fill every slot.
+const bySource = new Map();
+for (const story of stories) {
+	if (!bySource.has(story.source)) bySource.set(story.source, []);
+	bySource.get(story.source).push(story);
+}
+const queues = [...bySource.values()];
+const mixed = [];
+while (mixed.length < candidateCount && queues.some((queue) => queue.length > 0)) {
+	for (const queue of queues) {
+		const next = queue.shift();
+		if (next) mixed.push(next);
+		if (mixed.length >= candidateCount) break;
+	}
+}
+
+return mixed.map((story) => ({ json: story }));

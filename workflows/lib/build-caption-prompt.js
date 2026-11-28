@@ -1,6 +1,8 @@
-// Build the Ollama request for the chosen story only, so each run makes one AI call.
+// Build the Ollama request for one exported story. This node runs once for each story.
 const settings = $('Settings').first().json;
 const post = $json;
+const headline = String(post.captionHeadline ?? post.title ?? '').trim();
+const articleText = String(post.captionFacts ?? post.storyFacts ?? post.title ?? '').trim();
 
 const system = `You write Instagram captions for a UFC news page. Fight fans read them on their phones.
 
@@ -14,10 +16,10 @@ Answer with JSON that has these fields:
 
 Rules for the text: no hashtags, no emojis, no links, no outlet or author names, no dates of publication. Do not start with "In a", "Breaking", or "It's official". Use contractions.`;
 
-const user = `Headline: ${post.title}
+const user = `Headline: ${headline}
 
 Article text:
-${post.storyFacts || post.title}`;
+${articleText}`;
 
 const ollamaRequest = {
 	model: String(settings.ollamaModel || 'llama3.2'),
@@ -41,4 +43,4 @@ const ollamaRequest = {
 	options: { temperature: 0.3, top_p: 0.9, num_predict: 400, num_ctx: 4096 },
 };
 
-return [{ json: { ...post, ollamaRequest } }];
+return { json: { ...post, ollamaRequest } };

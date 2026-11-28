@@ -4,14 +4,17 @@ const caption = String(post.caption ?? '').trim() || '(No caption generated — 
 
 const payload = {
 	title: post.title,
-	link: post.link,
-	source: post.source,
+	captionHeadline: post.captionHeadline,
+	link: post.captionLink ?? post.link,
+	imageSource: post.source,
+	source: post.captionOutlet ?? post.source,
 	publishedAt: post.publishedAt,
 	sourceImage: post.sourceImage,
 	photoUrl: post.photoUrl,
 	backdropUrl: post.backdropUrl,
 	imageSize: post.layout ? `${post.layout.width}x${post.layout.height}` : undefined,
 	caption,
+	storySource: post.storySource,
 	captionSource: post.captionSource,
 	captionError: post.captionError,
 	exportDir: post.exportDir,
@@ -28,12 +31,10 @@ const toBinary = (text, mimeType, fileName) => ({
 	fileName,
 });
 
-return [
-	{
-		json: { ...post, caption, metaText },
-		binary: {
-			captionFile: toBinary(caption, 'text/plain', 'note.txt'),
-			metaFile: toBinary(metaText, 'application/json', 'data.json'),
-		},
+return {
+	json: { ...post, caption, metaText },
+	binary: {
+		captionFile: toBinary(caption, 'text/plain', 'note.txt'),
+		metaFile: toBinary(metaText, 'application/json', 'data.json'),
 	},
-];
+};
